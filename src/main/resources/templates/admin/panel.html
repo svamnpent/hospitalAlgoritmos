@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Administrador — Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .stat-card { background: #f8f9fa; padding: 14px 12px; border-radius: 8px; text-align: center; border-left: 4px solid #1a5276; }
+        .stat-card .numero { font-size: 1.6rem; font-weight: 700; color: #1a5276; }
+        .stat-card .label { font-size: 0.78rem; color: #666; margin-top: 4px; }
+        .stat-card.verde { border-left-color: #1e8449; }
+        .stat-card.verde .numero { color: #1e8449; }
+        .stat-card.naranja { border-left-color: #d68910; }
+        .stat-card.naranja .numero { color: #d68910; }
+        .stat-card.rojo { border-left-color: #c0392b; }
+        .stat-card.rojo .numero { color: #c0392b; }
+        .stat-card.morado { border-left-color: #8e44ad; }
+        .stat-card.morado .numero { color: #8e44ad; }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 720px) { .grid-2col { grid-template-columns: 1fr; } }
+        .chart-bar { display: flex; align-items: center; gap: 10px; margin: 4px 0; }
+        .chart-bar .barra { height: 20px; border-radius: 4px; min-width: 4px; }
+        .chart-bar .barra.atendida { background: #1e8449; }
+        .chart-bar .barra.pendiente { background: #d68910; }
+        .chart-bar .barra.cancelada { background: #c0392b; }
+        .chart-bar .barra.azul { background: #1a5276; }
+        .chart-bar .etiqueta { min-width: 110px; font-size: 0.85rem; }
+        .chart-bar .valor { font-weight: 600; font-size: 0.85rem; min-width: 40px; }
+        .resaltado { background: #fff3cd !important; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1>Hospital De la Salud</h1>
+    <div>
+        <span class="usuario" th:text="'Admin: ' + ${empleado.nombre}"></span>
+        <a th:href="@{/login}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- 📊 TARJETAS DE ESTADÍSTICAS -->
+    <div class="stats-grid">
+        <div class="stat-card"><div class="numero" th:text="${stats.totalCitas}">0</div><div class="label">Total Citas</div></div>
+        <div class="stat-card verde"><div class="numero" th:text="${stats.citasAtendidas}">0</div><div class="label">Atendidas</div></div>
+        <div class="stat-card naranja"><div class="numero" th:text="${stats.citasPendientes}">0</div><div class="label">Pendientes</div></div>
+        <div class="stat-card rojo"><div class="numero" th:text="${stats.citasCanceladas}">0</div><div class="label">Canceladas</div></div>
+        <div class="stat-card"><div class="numero" th:text="${stats.citasHoy}">0</div><div class="label">Citas Hoy</div></div>
+        <div class="stat-card morado"><div class="numero" th:text="${stats.pacientesRegistrados}">0</div><div class="label">Pacientes</div></div>
+        <div class="stat-card verde"><div class="numero" th:text="${stats.medicosActivos}">0</div><div class="label">Médicos Activos</div></div>
+        <div class="stat-card"><div class="numero" th:text="${stats.empleadosActivos}">0</div><div class="label">Empleados Activos</div></div>
+    </div>
+
+    <!-- 📈 GRÁFICOS -->
+    <div class="grid-2col">
+        <div class="card">
+            <h2>Citas por Especialidad</h2>
+            <div th:each="item : ${citasPorEspecialidad}">
+                <div class="chart-bar">
+                    <span class="etiqueta" th:text="${item.especialidad}"></span>
+                    <span class="valor" th:text="${item.total}"></span>
+                    <div class="barra azul" th:style="'width:' + (${item.total} * 100 / ${stats.totalCitas}) + '%'"></div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(citasPorEspecialidad)}" style="color:#888;">Sin datos</div>
+        </div>
+
+        <div class="card">
+            <h2>Citas por Médico</h2>
+            <div th:each="item : ${citasPorMedico}">
+                <div class="chart-bar">
+                    <span class="etiqueta" th:text="${item.medico}"></span>
+                    <span class="valor" th:text="${item.total}"></span>
+                    <div class="barra atendida" th:style="'width:' + (${item.atendidas} * 100 / ${item.total}) + '%'"></div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(citasPorMedico)}" style="color:#888;">Sin datos</div>
+        </div>
+    </div>
+
+    <div class="grid-2col">
+        <div class="card">
+            <h2>Citas por Estado</h2>
+            <div th:each="item : ${citasPorEstado}">
+                <div class="chart-bar">
+                    <span class="etiqueta" th:text="${item.estado}"></span>
+                    <span class="valor" th:text="${item.total}"></span>
+                    <div class="barra" th:classappend="${item.estado == 'ATENDIDA' ? 'atendida' : (item.estado == 'PENDIENTE' ? 'pendiente' : 'cancelada')}"
+                         th:style="'width:' + (${item.total} * 100 / ${stats.totalCitas}) + '%'"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Citas por Mes</h2>
+                <form method="get" style="margin:0;">
+                    <select name="year" onchange="this.form.submit()">
+                        <option th:each="y : ${years}" th:value="${y}" th:selected="${y == yearSeleccionado}" th:text="${y}"></option>
+                    </select>
+                </form>
+            </div>
+            <div th:each="item : ${citasPorMes}">
+                <div class="chart-bar">
+                    <span class="etiqueta" th:text="'Mes ' + ${item.mes}"></span>
+                    <span class="valor" th:text="${item.total}"></span>
+                    <div class="barra atendida" th:style="'width:' + (${item.atendidas} * 100 / ${item.total}) + '%'"></div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(citasPorMes)}" style="color:#888;">Sin datos para este año</div>
+        </div>
+    </div>
+
+    <!-- 👥 PERSONAL - BÚSQUEDA EN TIEMPO REAL -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h2>Personal — Búsqueda en tiempo real</h2>
+            <a th:href="@{/admin}" class="btn btn-secondary btn-sm">🔄 Actualizar</a>
+        </div>
+
+        <div th:if="${personalEncontrado}" class="alert alert-success"
+             th:text="'✅ Encontrado: ' + ${personalEncontrado[1]} + ' ' + ${personalEncontrado[2]} + ' — ' + ${personalEncontrado[4]}">
+        </div>
+        <div th:if="${mensajeNo}" class="alert alert-warning" th:text="${mensajeNo}"></div>
+
+        <div class="form-row" style="margin-bottom:16px;">
+            <div class="form-group" style="flex:1;">
+                <label>Buscar por DNI (escribe y filtra en tiempo real)</label>
+                <input type="text" id="dniBuscar" placeholder="Ej: 12345678" maxlength="8"
+                       onkeyup="buscarTiempoReal()" style="width:100%;"/>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('dniBuscar').value='';buscarTiempoReal();">LIMPIAR</button>
+        </div>
+
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                <tr><th>DNI</th><th>Nombre</th><th>Apellido</th><th>Teléfono</th><th>Rol</th><th>Usuario</th></tr>
+                </thead>
+                <tbody id="tablaPersonal">
+                <tr th:each="fila : ${personal}">
+                    <td th:text="${fila[0]}"></td>
+                    <td th:text="${fila[1]}"></td>
+                    <td th:text="${fila[2]}"></td>
+                    <td th:text="${fila[3]}"></td>
+                    <td th:text="${fila[4]}"></td>
+                    <td th:text="${fila[5]}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(personal)}">
+                    <td colspan="6" style="text-align:center;color:#888;">Sin personal registrado.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function buscarTiempoReal() {
+        var dni = document.getElementById('dniBuscar').value.trim();
+        if (dni === '') {
+            location.reload();
+            return;
+        }
+        $.ajax({
+            url: '/admin/buscar-ajax',
+            data: { dni: dni },
+            success: function(data) {
+                var tbody = document.getElementById('tablaPersonal');
+                tbody.innerHTML = '';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No se encontraron resultados</td></tr>';
+                    return;
+                }
+                data.forEach(function(fila) {
+                    var tr = document.createElement('tr');
+                    var dniCoincide = fila[0].includes(dni);
+                    if (dniCoincide) tr.className = 'resaltado';
+                    tr.innerHTML = '<td>' + fila[0] + '</td><td>' + fila[1] + '</td><td>' + fila[2] + '</td><td>' + fila[3] + '</td><td>' + fila[4] + '</td><td>' + (fila[5] || '—') + '</td>';
+                    tbody.appendChild(tr);
+                });
+            }
+        });
+    }
+</script>
+</body>
+</html>

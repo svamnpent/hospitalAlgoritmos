@@ -1,0 +1,115 @@
+/* ── Reset y base ─────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    color: #222;
+    min-height: 100vh;
+}
+
+/* ── Navbar ───────────────────────────────────────────── */
+.navbar {
+    background: #1a5276;
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.navbar h1 { font-size: 1.2rem; font-weight: 700; }
+.navbar .usuario { font-size: 0.9rem; opacity: .85; }
+.navbar a { color: #aed6f1; text-decoration: none; margin-left: 16px; font-size: .9rem; }
+.navbar a:hover { text-decoration: underline; }
+
+/* ── Contenedor ───────────────────────────────────────── */
+.container { max-width: 1100px; margin: 28px auto; padding: 0 16px; }
+
+/* ── Sección / Card ───────────────────────────────────── */
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    padding: 22px 28px;
+    margin-bottom: 24px;
+}
+.card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: #1a5276; text-transform: uppercase; letter-spacing: .05em; }
+
+/* ── Formularios ──────────────────────────────────────── */
+.form-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: .78rem; font-weight: 600; color: #555; }
+
+input[type=text], input[type=date], input[type=password],
+select, input[type=email] {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 7px 10px;
+    font-size: .9rem;
+    background: #fafafa;
+    width: 100%;
+    min-width: 140px;
+}
+input:focus, select:focus { outline: none; border-color: #1a5276; background: #fff; }
+
+/* ── Botones ──────────────────────────────────────────── */
+.btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 5px;
+    font-size: .88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+}
+.btn:hover { opacity: .85; }
+.btn-primary   { background: #1a5276; color: #fff; }
+.btn-secondary { background: #aab7c4; color: #fff; }
+.btn-success   { background: #1e8449; color: #fff; }
+.btn-danger    { background: #c0392b; color: #fff; }
+.btn-warning   { background: #d68910; color: #fff; }
+.btn-sm { padding: 5px 12px; font-size: .82rem; }
+
+/* ── Alertas ──────────────────────────────────────────── */
+.alert {
+    padding: 10px 16px;
+    border-radius: 5px;
+    margin-bottom: 16px;
+    font-size: .88rem;
+    font-weight: 600;
+}
+.alert-success { background: #d4efdf; color: #1e8449; border: 1px solid #a9dfbf; }
+.alert-danger  { background: #fadbd8; color: #c0392b; border: 1px solid #f1948a; }
+.alert-info    { background: #d6eaf8; color: #1a5276; border: 1px solid #85c1e9; }
+.alert-warning { background: #fef9e7; color: #9a7d0a; border: 1px solid #f9e79f; }
+
+/* ── Tabla ────────────────────────────────────────────── */
+.tabla-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { background: #1a5276; color: #fff; padding: 9px 12px; text-align: left; white-space: nowrap; }
+td { padding: 8px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+tr:hover td { background: #f2f9ff; }
+
+/* ── Login ────────────────────────────────────────────── */
+.login-wrapper {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; background: linear-gradient(135deg, #1a5276 0%, #154360 100%);
+}
+.login-card {
+    background: #fff; border-radius: 10px; padding: 40px 36px;
+    width: 360px; box-shadow: 0 6px 30px rgba(0,0,0,.25);
+}
+.login-card h2 { text-align: center; margin-bottom: 24px; color: #1a5276; font-size: 1.3rem; }
+.login-card .form-group { margin-bottom: 16px; }
+.login-card .btn { width: 100%; padding: 10px; font-size: 1rem; margin-top: 8px; }
+
+/* ── Badge de cola/pila ───────────────────────────────── */
+.badge {
+    display: inline-block; padding: 3px 9px; border-radius: 12px;
+    font-size: .75rem; font-weight: 700;
+}
+.badge-cola    { background: #d6eaf8; color: #1a5276; }
+.badge-pila    { background: #d5f5e3; color: #1e8449; }
+
+/* ── Acciones fila ────────────────────────────────────── */
+.acciones { display: flex; gap: 6px; }

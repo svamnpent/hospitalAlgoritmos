@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Agendar Cita</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<nav class="navbar">
+    <h1>Hospital De La Salud</h1>
+    <div>
+        <span class="usuario" th:text="'Recepcionista ' + ${empleado.nombre}"></span>
+        <a th:href="@{/recepcionista}">← Volver al panel</a>
+        <a th:href="@{/login}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card" style="max-width:520px; margin:0 auto;">
+        <h2>Agendar cita</h2>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <!-- Info del paciente -->
+        <div class="alert alert-info" th:if="${paciente}">
+            <strong>Paciente:</strong>
+            <span th:text="${paciente.nombre} + ' ' + ${paciente.apellido}"></span>
+            — DNI: <span th:text="${paciente.dni}"></span>
+        </div>
+
+        <form th:action="@{/recepcionista/agendar}" method="post">
+            <input type="hidden" name="idPaciente" th:value="${paciente?.idPersona}"/>
+
+            <div class="form-group" style="margin-bottom:14px;">
+                <label>Servicio *</label>
+                <select name="idServicio" required>
+                    <option value="">-- Seleccione un servicio --</option>
+                    <option th:each="s : ${servicios}"
+                            th:value="${s.idServicio}"
+                            th:text="${s.nombreServicio} + ' (' + ${s.duracionMinutos} + ' min)'">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px;">
+                <label>Doctor(a) *</label>
+                <select name="idMedico" required>
+                    <option value="">-- Seleccione un médico --</option>
+                    <option th:each="m : ${medicos}"
+                            th:value="${m.idPersona}"
+                            th:text="'Dr(a). ' + ${m.nombre} + ' ' + ${m.apellido}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-row" style="margin-bottom:14px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Fecha de la cita *</label>
+                    <input type="date" name="fecha" required
+                           th:min="${#dates.format(#dates.createNow(),'yyyy-MM-dd')}"/>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Hora *</label>
+                    <select name="hora" required>
+                        <option th:each="h : ${horas}" th:value="${h}" th:text="${h}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:10px;">
+                <button type="submit" class="btn btn-primary">AGENDAR</button>
+                <a th:href="@{/recepcionista}" class="btn btn-secondary">CANCELAR</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

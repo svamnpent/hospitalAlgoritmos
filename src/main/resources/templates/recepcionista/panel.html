@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Recepcionista — Panel</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <h1>Hospital De La Salud</h1>
+    <div>
+        <span class="usuario" th:text="'Hola Recepcionista ' + ${empleado.nombre}"></span>
+        <a th:href="@{/login}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Alertas flash -->
+    <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
+    <div th:if="${error}" class="alert alert-danger"  th:text="${error}"></div>
+
+    <!-- ── BÚSQUEDA RÁPIDA POR DNI ─────────────────────────────────── -->
+    <div class="card">
+        <h2>Búsqueda rápida por DNI</h2>
+        <form th:action="@{/recepcionista/buscar-dni}" method="get" class="form-row">
+            <div class="form-group">
+                <label>DNI del paciente</label>
+                <input type="text" name="dni" placeholder="Ej: 12345678"
+                       th:value="${dniBuscado}" maxlength="8"/>
+            </div>
+            <button type="submit" class="btn btn-primary">BUSCAR PACIENTE</button>
+            <a th:href="@{/recepcionista/registrar}" class="btn btn-success">REGISTRAR NUEVO</a>
+        </form>
+
+        <!-- Resultado de búsqueda por DNI -->
+        <div th:if="${pacienteEncontrado}" style="margin-top:14px;">
+            <div class="alert alert-success"
+                 th:text="'Paciente encontrado: ' + ${pacienteEncontrado.nombre} + ' ' + ${pacienteEncontrado.apellido}">
+            </div>
+            <a th:href="@{/recepcionista/agendar/{id}(id=${pacienteEncontrado.idPersona})}"
+               class="btn btn-primary">AGENDAR CITA →</a>
+        </div>
+        <div th:if="${mensajeNoPaciente}" style="margin-top:14px;">
+            <div class="alert alert-warning" th:text="${mensajeNoPaciente}"></div>
+            <a th:href="@{/recepcionista/registrar}" class="btn btn-success">REGISTRAR AHORA</a>
+        </div>
+    </div>
+
+    <!-- ── LISTA DE PACIENTES ──────────────────────────────────────── -->
+    <div class="card">
+        <h2>Registro de pacientes</h2>
+
+        <!-- Buscar y ordenar -->
+        <div class="form-row" style="margin-bottom:14px;">
+            <form th:action="@{/recepcionista/buscar}" method="get" class="form-row">
+                <div class="form-group">
+                    <label>Buscar (DNI / Nombre / Apellido)</label>
+                    <input type="text" name="texto" placeholder="Ingrese texto..."/>
+                </div>
+                <button type="submit" class="btn btn-secondary btn-sm">BUSCAR</button>
+            </form>
+            <form th:action="@{/recepcionista}" method="get" class="form-row" style="margin-left:8px;">
+                <div class="form-group">
+                    <label>Ordenar por</label>
+                    <select name="orden">
+                        <option value="apellido"         th:selected="${orden=='apellido'}">Apellido</option>
+                        <option value="nombre"           th:selected="${orden=='nombre'}">Nombre</option>
+                        <option value="fecha_nacimiento" th:selected="${orden=='fecha_nacimiento'}">Fecha Nac.</option>
+                        <option value="dni"              th:selected="${orden=='dni'}">DNI</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary btn-sm">ORDENAR</button>
+            </form>
+        </div>
+
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>DNI</th><th>Nombre</th><th>Apellido</th>
+                        <th>T.Sangre</th><th>Dirección</th><th>Teléfono</th>
+                        <th>Género</th><th>Seguro</th><th>Nacimiento</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${pacientes}">
+                        <td th:text="${p.idPersona}"></td>
+                        <td th:text="${p.dni}"></td>
+                        <td th:text="${p.nombre}"></td>
+                        <td th:text="${p.apellido}"></td>
+                        <td th:text="${p.grupoSanguineo}"></td>
+                        <td th:text="${p.direccion}"></td>
+                        <td th:text="${p.telefono}"></td>
+                        <td th:text="${p.genero}"></td>
+                        <td th:text="${p.tipoSeguro}"></td>
+                        <td th:text="${p.fechaNacimiento}"></td>
+                        <td class="acciones">
+                            <!-- Botón editar abre el modal -->
+                            <button class="btn btn-warning btn-sm btn-editar"
+                                    th:data-id="${p.idPersona}"
+                                    th:data-dni="${p.dni}"
+                                    th:data-nombre="${p.nombre}"
+                                    th:data-apellido="${p.apellido}"
+                                    th:data-sangre="${p.grupoSanguineo}"
+                                    th:data-direccion="${p.direccion}"
+                                    th:data-telefono="${p.telefono}"
+                                    th:data-genero="${p.genero}"
+                                    th:data-seguro="${p.tipoSeguro}"
+                                    th:data-fecha="${p.fechaNacimiento}">
+                                Editar
+                            </button>
+                            <a th:href="@{/recepcionista/agendar/{id}(id=${p.idPersona})}"
+                               class="btn btn-primary btn-sm">Cita</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(pacientes)}">
+                        <td colspan="11" style="text-align:center;color:#888;">Sin pacientes registrados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── MODAL MODIFICAR PACIENTE ──────────────────────────────────── -->
+<div id="modalEditar" style="display:none; position:fixed; inset:0;
+     background:rgba(0,0,0,.45); z-index:999; align-items:center; justify-content:center;">
+    <div class="card" style="width:620px; max-height:90vh; overflow-y:auto;">
+        <h2>Modificar registro</h2>
+        <form th:action="@{/recepcionista/modificar}" method="post">
+            <input type="hidden" id="editId" name="idPersona"/>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>DNI</label>
+                    <input type="text" id="editDni" name="dni" maxlength="8" required/>
+                </div>
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="editNombre" name="nombre" required/>
+                </div>
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" id="editApellido" name="apellido" required/>
+                </div>
+            </div>
+            <div class="form-row" style="margin-top:10px;">
+                <div class="form-group">
+                    <label>Grupo sanguíneo</label>
+                    <input type="text" id="editSangre" name="grupoSanguineo" maxlength="5"/>
+                </div>
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" id="editDireccion" name="direccion"/>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="editTelefono" name="telefono"/>
+                </div>
+            </div>
+            <div class="form-row" style="margin-top:10px;">
+                <div class="form-group">
+                    <label>Género</label>
+                    <select id="editGenero" name="genero">
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de seguro</label>
+                    <select id="editSeguro" name="tipoSeguro">
+                        <option value="SIS">SIS</option>
+                        <option value="EsSalud">EsSalud</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha nacimiento</label>
+                    <input type="date" id="editFecha" name="fechaNacimiento" required/>
+                </div>
+            </div>
+            <div style="margin-top:16px; display:flex; gap:10px;">
+                <button type="submit" class="btn btn-primary">GUARDAR CAMBIOS</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarEditar()">CANCELAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-editar').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.getElementById('editId').value        = this.dataset.id;
+            document.getElementById('editDni').value       = this.dataset.dni;
+            document.getElementById('editNombre').value    = this.dataset.nombre;
+            document.getElementById('editApellido').value  = this.dataset.apellido;
+            document.getElementById('editSangre').value    = this.dataset.sangre || '';
+            document.getElementById('editDireccion').value = this.dataset.direccion || '';
+            document.getElementById('editTelefono').value  = this.dataset.telefono || '';
+            document.getElementById('editGenero').value    = this.dataset.genero || 'M';
+            document.getElementById('editSeguro').value    = this.dataset.seguro || 'SIS';
+            document.getElementById('editFecha').value     = this.dataset.fecha || '';
+            document.getElementById('modalEditar').style.display = 'flex';
+        });
+    });
+</script>
+</body>
+</html>

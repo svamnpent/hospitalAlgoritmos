@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Cobrar Cita</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<nav class="navbar">
+    <h1> Hospital De La Salud</h1>
+    <div>
+        <span class="usuario" th:text="'Recepcionista ' + ${empleado.nombre}"></span>
+        <a th:href="@{/recepcionista}">← Volver al panel</a>
+        <a th:href="@{/logout}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card" style="max-width:500px; margin:0 auto;">
+        <h2>💳 Cobrar Cita</h2>
+
+        <div class="alert alert-info">
+            <strong>Paciente:</strong> <span th:text="${paciente}"></span><br/>
+            <strong>Servicio:</strong> <span th:text="${servicio}"></span><br/>
+            <strong>Monto:</strong> S/ <span th:text="${monto}"></span><br/>
+            <strong>Estado:</strong> <span th:text="${estado}"></span>
+        </div>
+
+        <div th:if="${estado != 'ATENDIDA'}" class="alert alert-warning">
+            ⚠️ Esta cita aún no ha sido atendida. Primero debe ser atendida por el médico.
+        </div>
+
+        <form th:action="@{/recepcionista/cobrar}" method="post" th:if="${estado == 'ATENDIDA'}">
+            <input type="hidden" name="idCita" th:value="${idCita}"/>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>Método de Pago *</label>
+                <select name="metodoPago" required>
+                    <option value="">-- Seleccionar --</option>
+                    <option th:each="m : ${metodosPago}" th:value="${m}" th:text="${m}"></option>
+                </select>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button type="submit" class="btn btn-success">✅ COBRAR</button>
+                <a th:href="@{/recepcionista}" class="btn btn-secondary">CANCELAR</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

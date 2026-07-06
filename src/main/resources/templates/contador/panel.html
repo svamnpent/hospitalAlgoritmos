@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Contador — Panel</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+    <style>
+        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .balance-card { background: #f8f9fa; padding: 14px 12px; border-radius: 8px; text-align: center; border-left: 4px solid #1a5276; }
+        .balance-card .numero { font-size: 1.6rem; font-weight: 700; }
+        .balance-card .label { font-size: 0.78rem; color: #666; }
+        .balance-card.ingreso { border-left-color: #1e8449; }
+        .balance-card.ingreso .numero { color: #1e8449; }
+        .balance-card.egreso { border-left-color: #c0392b; }
+        .balance-card.egreso .numero { color: #c0392b; }
+        .balance-card.saldo { border-left-color: #1a5276; }
+        .balance-card.saldo .numero { color: #1a5276; }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width:720px){ .grid-2col { grid-template-columns:1fr; } }
+        .filtros-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; align-items:center; justify-content:center; }
+        .modal-content { background:#fff; border-radius:8px; padding:24px; width:460px; max-height:90vh; overflow-y:auto; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1> Hospital De La Salud</h1>
+    <div>
+        <span class="usuario" th:text="'Contador: ' + ${empleado.nombre}"></span>
+        <a th:href="@{/logout}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <!-- 💰 Balance -->
+    <div class="balance-grid">
+        <div class="balance-card ingreso">
+            <div class="numero" th:text="${#numbers.formatDecimal(resumen.totalIngresos, 0, 2)}">0.00</div>
+            <div class="label">Total Ingresos</div>
+        </div>
+        <div class="balance-card egreso">
+            <div class="numero" th:text="${#numbers.formatDecimal(resumen.totalEgresos, 0, 2)}">0.00</div>
+            <div class="label">Total Egresos</div>
+        </div>
+        <div class="balance-card saldo">
+            <div class="numero" th:text="${#numbers.formatDecimal(resumen.saldo, 0, 2)}">0.00</div>
+            <div class="label">Saldo Actual</div>
+        </div>
+        <div class="balance-card ingreso">
+            <div class="numero" th:text="${#numbers.formatDecimal(resumen.ingresosPorCitas, 0, 2)}">0.00</div>
+            <div class="label">Ingresos por Citas</div>
+        </div>
+        <div class="balance-card egreso">
+            <div class="numero" th:text="${#numbers.formatDecimal(resumen.egresosPlanilla, 0, 2)}">0.00</div>
+            <div class="label">Egresos Planilla</div>
+        </div>
+        <div class="balance-card">
+            <div class="numero" th:text="${resumen.totalCitasPagadas}">0</div>
+            <div class="label">Citas Pagadas</div>
+        </div>
+    </div>
+
+    <!-- 📊 Gráficos -->
+    <div class="grid-2col">
+        <div class="card">
+            <h2>Ingresos por Mes</h2>
+            <form method="get" style="margin-bottom:10px;">
+                <select name="year" onchange="this.form.submit()">
+                    <option th:each="y : ${years}" th:value="${y}" th:selected="${y == yearSeleccionado}" th:text="${y}"></option>
+                </select>
+            </form>
+            <div th:each="item : ${ingresosPorMes}">
+                <div style="display:flex; align-items:center; gap:8px; margin:3px 0;">
+                    <span style="min-width:70px;" th:text="'Mes ' + ${item.mes}"></span>
+                    <span style="font-weight:600; min-width:60px;" th:text="${#numbers.formatDecimal(item.total, 0, 2)}"></span>
+                    <div class="barra" style="height:18px; background:#1e8449; border-radius:4px;"
+                         th:style="'width:' + (${item.total} * 100 / ${resumen.totalIngresos}) + '%'"></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Egresos por Categoría</h2>
+            <div th:each="item : ${egresosPorCategoria}">
+                <div style="display:flex; align-items:center; gap:8px; margin:3px 0;">
+                    <span style="min-width:100px;" th:text="${item.categoria}"></span>
+                    <span style="font-weight:600; min-width:60px;" th:text="${#numbers.formatDecimal(item.total, 0, 2)}"></span>
+                    <div class="barra" style="height:18px; background:#c0392b; border-radius:4px;"
+                         th:style="'width:' + (${item.total} * 100 / ${resumen.totalEgresos}) + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📋 Movimientos con filtros -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <h2>Movimientos</h2>
+            <button class="btn btn-danger" onclick="abrirModal()">+ REGISTRAR EGRESO</button>
+        </div>
+
+        <form method="get" class="filtros-row" style="margin:12px 0;">
+            <div class="form-group">
+                <label>Tipo</label>
+                <select name="filtroTipo">
+                    <option value="">Todos</option>
+                    <option value="INGRESO" th:selected="${filtroTipo == 'INGRESO'}">Ingreso</option>
+                    <option value="EGRESO" th:selected="${filtroTipo == 'EGRESO'}">Egreso</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Categoría</label>
+                <select name="filtroCategoria">
+                    <option value="">Todas</option>
+                    <option value="PAGO_CITA" th:selected="${filtroCategoria == 'PAGO_CITA'}">Pago Cita</option>
+                    <option value="PLANILLA" th:selected="${filtroCategoria == 'PLANILLA'}">Planilla</option>
+                    <option value="INSUMOS" th:selected="${filtroCategoria == 'INSUMOS'}">Insumos</option>
+                    <option value="OTROS" th:selected="${filtroCategoria == 'OTROS'}">Otros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha inicio</label>
+                <input type="date" name="fechaInicio" th:value="${fechaInicio}"/>
+            </div>
+            <div class="form-group">
+                <label>Fecha fin</label>
+                <input type="date" name="fechaFin" th:value="${fechaFin}"/>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-sm">FILTRAR</button>
+            <a th:href="@{/contador}" class="btn btn-sm">LIMPIAR</a>
+        </form>
+
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                <tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Descripción</th><th>Registrado por</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="m : ${movimientos}">
+                    <td th:text="${#dates.format(m.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td>
+                            <span th:classappend="${m.tipo == 'INGRESO' ? 'alert-success' : 'alert-danger'}"
+                                  style="padding:2px 10px;border-radius:4px;font-weight:600;font-size:0.8rem;"
+                                  th:text="${m.tipo}"></span>
+                    </td>
+                    <td th:text="${m.categoria}"></td>
+                    <td style="font-weight:600;" th:text="${#numbers.formatDecimal(m.monto, 0, 2)}"></td>
+                    <td th:text="${m.descripcion}"></td>
+                    <td th:text="${m.nombreContador}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(movimientos)}">
+                    <td colspan="6" style="text-align:center;color:#888;">Sin movimientos registrados.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Egreso -->
+<div id="modalEgreso" class="modal">
+    <div class="modal-content">
+        <h2>Registrar Egreso</h2>
+        <form th:action="@{/contador/registrar-egreso}" method="post">
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Categoría *</label>
+                <select name="categoria" required>
+                    <option value="PLANILLA">Planilla</option>
+                    <option value="INSUMOS">Insumos</option>
+                    <option value="OTROS">Otros</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Monto (S/) *</label>
+                <input type="number" name="monto" step="0.01" min="0.01" required/>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Descripción</label>
+                <textarea name="descripcion" rows="3" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:5px;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn btn-danger">REGISTRAR EGRESO</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">CANCELAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModal() { document.getElementById('modalEgreso').style.display = 'flex'; }
+    function cerrarModal() { document.getElementById('modalEgreso').style.display = 'none'; }
+    window.onclick = function(event) { if (event.target == document.getElementById('modalEgreso')) cerrarModal(); }
+</script>
+</body>
+</html>

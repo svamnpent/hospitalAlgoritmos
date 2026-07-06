@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Médico — Panel</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<nav class="navbar">
+    <h1>Hospital De La Salud</h1>
+    <div>
+        <span class="usuario"
+              th:text="'Dr(a). ' + ${empleado.nombre} + ' ' + ${empleado.apellido}"></span>
+        <a th:href="@{/login}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Alertas flash -->
+    <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
+    <div th:if="${error}" class="alert alert-danger"  th:text="${error}"></div>
+    <div th:if="${aviso}" class="alert alert-warning" th:text="${aviso}"></div>
+
+    <!-- ── PACIENTES ASIGNADOS ─────────────────────────────────────── -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h2>Pacientes asignados</h2>
+            <form th:action="@{/medico/actualizar}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-secondary btn-sm">🔄 Actualizar</button>
+            </form>
+        </div>
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>DNI</th><th>Nombre</th><th>Apellido</th>
+                        <th>Teléfono</th><th>Historia Clínica</th><th>Seguro</th><th>Sangre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${pacientes}">
+                        <td th:text="${p.idPersona}"></td>
+                        <td th:text="${p.dni}"></td>
+                        <td th:text="${p.nombre}"></td>
+                        <td th:text="${p.apellido}"></td>
+                        <td th:text="${p.telefono}"></td>
+                        <td th:text="${p.historiaClinica}"></td>
+                        <td th:text="${p.tipoSeguro}"></td>
+                        <td th:text="${p.grupoSanguineo}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(pacientes)}">
+                        <td colspan="8" style="text-align:center;color:#888;">Sin pacientes asignados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── COLA DE ATENCIÓN (FIFO) ────────────────────────────────── -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+                <h2 style="display:inline;">Cola de atención — Hoy</h2>
+                <span class="badge badge-cola" th:text="${#lists.size(cola)} + ' en espera'" style="margin-left:8px;"></span>
+            </div>
+            <form th:action="@{/medico/atender}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-primary"
+                        th:disabled="${#lists.isEmpty(cola)}">
+                    ▶ Atender siguiente
+                </button>
+            </form>
+        </div>
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>ID Cita</th><th>Paciente</th><th>Hora</th><th>Servicio</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c, iter : ${cola}"
+                        th:classappend="${iter.index == 0 ? 'style=background:#eaf7fb' : ''}">
+                        <td th:text="${iter.index + 1}"></td>
+                        <td th:text="${c.idCita}"></td>
+                        <td th:text="${c.nombrePaciente}"></td>
+                        <td th:text="${c.fechaCitaCom != null ? #dates.format(c.fechaCitaCom,'HH:mm') : '—'}"></td>
+                        <td th:text="${c.nombreServicio}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(cola)}">
+                        <td colspan="5" style="text-align:center;color:#888;">Cola vacía — sin pacientes pendientes hoy.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── HISTORIAL / PILA (LIFO) ────────────────────────────────── -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+                <h2 style="display:inline;">Historial de atenciones — Pila (deshacer)</h2>
+                <span class="badge badge-pila" th:text="${#lists.size(historial)} + ' atendidos'" style="margin-left:8px;"></span>
+            </div>
+            <form th:action="@{/medico/deshacer}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-warning"
+                        th:disabled="${#lists.isEmpty(historial)}">
+                    ↩ Deshacer última atención
+                </button>
+            </form>
+        </div>
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>ID Cita</th><th>Paciente</th><th>Servicio</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c, iter : ${historial}">
+                        <td th:text="${iter.index + 1}"></td>
+                        <td th:text="${c.idCita}"></td>
+                        <td th:text="${c.nombrePaciente}"></td>
+                        <td th:text="${c.nombreServicio}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(historial)}">
+                        <td colspan="4" style="text-align:center;color:#888;">Sin atenciones registradas en esta sesión.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>RRHH — Panel</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+    <style>
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #f8f9fa; padding: 12px 10px; border-radius: 8px; text-align: center; border-left: 4px solid #1a5276; }
+        .stat-card .numero { font-size: 1.5rem; font-weight: 700; color: #1a5276; }
+        .stat-card .label { font-size: 0.75rem; color: #666; }
+        .stat-card.verde { border-left-color: #1e8449; }
+        .stat-card.rojo { border-left-color: #c0392b; }
+        .stat-card.naranja { border-left-color: #d68910; }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 720px) { .grid-2col { grid-template-columns: 1fr; } }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; align-items:center; justify-content:center; }
+        .modal-content { background:#fff; border-radius:8px; padding:24px; width:560px; max-height:90vh; overflow-y:auto; }
+        .filtros-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+        .badge-estado { padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .badge-activo { background: #d4efdf; color: #1e8449; }
+        .badge-inactivo { background: #fadbd8; color: #c0392b; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1> Hospital De La Salud</h1>
+    <div>
+        <span class="usuario" th:text="'RRHH: ' + ${empleado.nombre}"></span>
+        <a th:href="@{/logout}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <!-- 📊 Resumen -->
+    <div class="stats-grid">
+        <div class="stat-card"><div class="numero" th:text="${resumen.totalEmpleados}">0</div><div class="label">Total Empleados</div></div>
+        <div class="stat-card verde"><div class="numero" th:text="${resumen.activos}">0</div><div class="label">Activos</div></div>
+        <div class="stat-card rojo"><div class="numero" th:text="${resumen.inactivos}">0</div><div class="label">Inactivos</div></div>
+        <div class="stat-card"><div class="numero" th:text="${resumen.doctores}">0</div><div class="label">Doctores</div></div>
+        <div class="stat-card"><div class="numero" th:text="${resumen.recepcionistas}">0</div><div class="label">Recepcionistas</div></div>
+        <div class="stat-card naranja"><div class="numero" th:text="'S/' + ${#numbers.formatDecimal(resumen.totalPlanilla, 0, 2)}">0</div><div class="label">Total Planilla</div></div>
+    </div>
+
+    <!-- 📈 Distribución -->
+    <div class="grid-2col" style="margin-bottom:20px;">
+        <div class="card">
+            <h2>Distribución por Rol</h2>
+            <div th:each="item : ${distribucion}">
+                <div style="display:flex; align-items:center; gap:8px; margin:3px 0;">
+                    <span style="min-width:120px;" th:text="${item.rol}"></span>
+                    <span style="font-weight:600; min-width:30px;" th:text="${item.total}"></span>
+                    <div class="barra" style="height:18px; background:#1a5276; border-radius:4px;"
+                         th:style="'width:' + (${item.total} * 100 / ${resumen.totalEmpleados}) + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 👥 Lista de Empleados -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <h2>Lista de Empleados</h2>
+            <button class="btn btn-success" onclick="abrirModalContratar()">+ CONTRATAR</button>
+        </div>
+
+        <form method="get" class="filtros-row" style="margin:12px 0;">
+            <div class="form-group">
+                <label>Estado</label>
+                <select name="estado">
+                    <option value="">Todos</option>
+                    <option value="ACTIVO" th:selected="${estadoFiltro == 'ACTIVO'}">Activo</option>
+                    <option value="INACTIVO" th:selected="${estadoFiltro == 'INACTIVO'}">Inactivo</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Rol</label>
+                <select name="idRol">
+                    <option value="0">Todos</option>
+                    <option th:each="r : ${roles}" th:value="${r[0]}" th:selected="${idRolFiltro == r[0]}" th:text="${r[1]}"></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-sm">FILTRAR</button>
+            <a th:href="@{/rrhh}" class="btn btn-sm">LIMPIAR</a>
+        </form>
+
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                <tr><th>ID</th><th>DNI</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Sueldo</th><th>Día Descanso</th><th>Horario</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="e : ${empleados}">
+                    <td th:text="${e.idPersona}"></td>
+                    <td th:text="${e.dni}"></td>
+                    <td th:text="${e.nombre} + ' ' + ${e.apellido}"></td>
+                    <td th:text="${e.nombreRol}"></td>
+                    <td><span class="badge-estado" th:classappend="${e.estadoContrato == 'ACTIVO' ? 'badge-activo' : 'badge-inactivo'}" th:text="${e.estadoContrato}"></span></td>
+                    <td th:text="${#numbers.formatDecimal(e.sueldoBase, 0, 2)}"></td>
+                    <td th:text="${e.diaDescanso}"></td>
+                    <td th:text="${e.horaEntrada} + ' - ' + ${e.horaSalida}"></td>
+                    <td class="acciones">
+                        <button class="btn btn-secondary btn-sm btn-horario" th:data-id="${e.idPersona}" th:data-dia="${e.diaDescanso}" th:data-entrada="${e.horaEntrada}" th:data-salida="${e.horaSalida}">Horario</button>
+                        <button class="btn btn-warning btn-sm btn-estado" th:data-id="${e.idPersona}" th:data-estado="${e.estadoContrato}">Estado</button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(empleados)}">
+                    <td colspan="9" style="text-align:center;color:#888;">No hay empleados registrados.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Contratar -->
+<div id="modalContratar" class="modal">
+    <div class="modal-content">
+        <h2>📝 Contratar Nuevo Empleado</h2>
+        <form th:action="@{/rrhh/contratar}" method="post">
+            <div class="form-row">
+                <div class="form-group"><label>DNI *</label><input type="text" name="dni" maxlength="8" required/></div>
+                <div class="form-group"><label>Nombre *</label><input type="text" name="nombre" required/></div>
+                <div class="form-group"><label>Apellido *</label><input type="text" name="apellido" required/></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Teléfono</label><input type="text" name="telefono"/></div>
+                <div class="form-group"><label>Fecha Nac.</label><input type="date" name="fechaNacimiento"/></div>
+                <div class="form-group"><label>Dirección</label><input type="text" name="direccion"/></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Género</label>
+                    <select name="genero"><option value="M">M</option><option value="F">F</option></select>
+                </div>
+                <div class="form-group"><label>Rol *</label>
+                    <select name="idRol" required>
+                        <option th:each="r : ${roles}" th:value="${r[0]}" th:text="${r[1]}"></option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Sueldo Base</label><input type="number" name="sueldoBase" step="0.01" value="3000"/></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Fecha Contratación</label><input type="date" name="fechaContratacion" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"/></div>
+                <div class="form-group"><label>Día Descanso</label>
+                    <select name="diaDescanso">
+                        <option th:each="d : ${diasDescanso}" th:value="${d}" th:text="${d}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Hora Entrada</label><input type="time" name="horaEntrada" value="08:00"/></div>
+                <div class="form-group"><label>Hora Salida</label><input type="time" name="horaSalida" value="16:00"/></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Usuario *</label><input type="text" name="username" required/></div>
+                <div class="form-group"><label>Contraseña *</label><input type="password" name="password" required/></div>
+            </div>
+            <div style="margin-top:16px; display:flex; gap:10px;">
+                <button type="submit" class="btn btn-success">CONTRATAR</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalContratar')">CANCELAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Horario -->
+<div id="modalHorario" class="modal">
+    <div class="modal-content">
+        <h2>Actualizar Horario</h2>
+        <form th:action="@{/rrhh/actualizar-horario}" method="post">
+            <input type="hidden" id="horarioId" name="idEmpleado"/>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Día de Descanso</label>
+                <select name="diaDescanso" id="horarioDia">
+                    <option th:each="d : ${diasDescanso}" th:value="${d}" th:text="${d}"></option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Hora Entrada</label>
+                <input type="time" id="horarioEntrada" name="horaEntrada" required/>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Hora Salida</label>
+                <input type="time" id="horarioSalida" name="horaSalida" required/>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn btn-primary">GUARDAR</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalHorario')">CANCELAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Estado -->
+<div id="modalEstado" class="modal">
+    <div class="modal-content">
+        <h2>Cambiar Estado del Contrato</h2>
+        <form th:action="@{/rrhh/cambiar-estado}" method="post">
+            <input type="hidden" id="estadoId" name="idEmpleado"/>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Nuevo Estado</label>
+                <select name="estado" id="estadoSelect">
+                    <option value="ACTIVO">Activo</option>
+                    <option value="INACTIVO">Inactivo</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn btn-primary">ACTUALIZAR</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalEstado')">CANCELAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalContratar() { document.getElementById('modalContratar').style.display = 'flex'; }
+
+    document.querySelectorAll('.btn-horario').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.getElementById('horarioId').value = this.dataset.id;
+            document.getElementById('horarioDia').value = this.dataset.dia || 'LUNES';
+            document.getElementById('horarioEntrada').value = this.dataset.entrada || '08:00';
+            document.getElementById('horarioSalida').value = this.dataset.salida || '16:00';
+            document.getElementById('modalHorario').style.display = 'flex';
+        });
+    });
+
+    document.querySelectorAll('.btn-estado').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.getElementById('estadoId').value = this.dataset.id;
+            document.getElementById('estadoSelect').value = this.dataset.estado || 'ACTIVO';
+            document.getElementById('modalEstado').style.display = 'flex';
+        });
+    });
+
+    function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+    window.onclick = function(event) { if (event.target.className === 'modal') event.target.style.display = 'none'; }
+</script>
+</body>
+</html>

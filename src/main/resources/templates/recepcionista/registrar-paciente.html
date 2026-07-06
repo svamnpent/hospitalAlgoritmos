@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Registrar Paciente</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<nav class="navbar">
+    <h1> Hospital De La Salud</h1>
+    <div>
+        <span class="usuario" th:text="'Recepcionista ' + ${empleado.nombre}"></span>
+        <a th:href="@{/recepcionista}">← Volver al panel</a>
+        <a th:href="@{/login}">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card" style="max-width:660px; margin:0 auto;">
+        <h2>Registrar nuevo paciente</h2>
+
+        <form th:action="@{/recepcionista/registrar}" method="post">
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label>DNI *</label>
+                    <input type="text" name="dni" maxlength="8" required autofocus/>
+                </div>
+                <div class="form-group" style="flex:2;">
+                    <label>Nombre *</label>
+                    <input type="text" name="nombre" required/>
+                </div>
+                <div class="form-group" style="flex:2;">
+                    <label>Apellido *</label>
+                    <input type="text" name="apellido" required/>
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-top:12px;">
+                <div class="form-group" style="flex:2;">
+                    <label>Dirección</label>
+                    <input type="text" name="direccion"/>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono"/>
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-top:12px;">
+                <div class="form-group">
+                    <label>Fecha de nacimiento *</label>
+                    <input type="date" name="fechaNacimiento" required/>
+                </div>
+                <div class="form-group">
+                    <label>Género</label>
+                    <select name="genero">
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de seguro</label>
+                    <select name="tipoSeguro">
+                        <option value="SIS">SIS</option>
+                        <option value="EsSalud">EsSalud</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Grupo sanguíneo</label>
+                    <input type="text" name="grupoSanguineo" maxlength="5" placeholder="A+"/>
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-top:12px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Historia clínica</label>
+                    <input type="text" name="historiaClinica"/>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; display:flex; gap:12px;">
+                <button type="submit" class="btn btn-success">REGISTRAR PACIENTE</button>
+                <a th:href="@{/recepcionista}" class="btn btn-secondary">CANCELAR</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
