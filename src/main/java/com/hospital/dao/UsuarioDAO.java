@@ -37,7 +37,8 @@ public class UsuarioDAO {
                 emp.setPassword(rs.getString("password"));
             }
         } catch (SQLException e) {
-            System.err.println("Error al buscar usuario: " + e.getMessage());
+            System.err.println("========== ERROR SQL ==========");
+            e.printStackTrace();
         }
         return emp;
     }
@@ -68,7 +69,8 @@ public class UsuarioDAO {
                 emp.setDiaDescanso(rs.getString("dia_descanso"));
             }
         } catch (SQLException e) {
-            System.err.println("Error en login: " + e.getMessage());
+            System.err.println("========== ERROR SQL ==========");
+            e.printStackTrace();
         }
         return emp;
     }
