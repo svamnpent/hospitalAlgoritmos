@@ -16,7 +16,7 @@ public class UsuarioDAO {
                      "FROM usuarios u " +
                      "JOIN empleados e ON u.id_empleado = e.id_empleado " +
                      "JOIN personas p ON e.id_empleado = p.id_persona " +
-                     "WHERE u.username = ? AND u.activo = 1";
+                "WHERE u.username = ? AND u.activo = true";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -49,7 +49,7 @@ public class UsuarioDAO {
                      "FROM usuarios u " +
                      "JOIN empleados e ON u.id_empleado = e.id_empleado " +
                      "JOIN personas p ON e.id_empleado = p.id_persona " +
-                     "WHERE u.username = ? AND u.password = ? AND u.activo = 1";
+                "WHERE u.username = ? AND u.password = ? AND u.activo = true";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -81,7 +81,7 @@ public class UsuarioDAO {
                 "JOIN empleados e ON u.id_empleado = e.id_empleado " +
                 "JOIN personas p ON e.id_empleado = p.id_persona " +
                 "JOIN roles r ON e.id_rol = r.id_rol " +
-                "WHERE u.activo = 1 ORDER BY p.dni";
+                "WHERE u.activo = true ORDER BY p.dni";
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

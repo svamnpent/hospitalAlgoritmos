@@ -175,7 +175,7 @@ public class RRHHDAO {
             }
 
             // 3. Insertar en usuarios
-            String sqlUsuario = "INSERT INTO usuarios (id_empleado, username, password, activo) VALUES (?, ?, ?, 1)";
+            String sqlUsuario = "INSERT INTO usuarios (id_empleado, username, password, activo) VALUES (?, ?, ?, true)";
             try (PreparedStatement ps = con.prepareStatement(sqlUsuario)) {
                 ps.setInt(1, idPersona);
                 ps.setString(2, username);
