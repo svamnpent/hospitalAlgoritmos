@@ -17,9 +17,9 @@ public class ReporteDAO {
                 (SELECT COUNT(*) FROM citas WHERE estado = 'ATENDIDA') AS atendidas,
                 (SELECT COUNT(*) FROM citas WHERE estado = 'PENDIENTE') AS pendientes,
                 (SELECT COUNT(*) FROM citas WHERE estado = 'CANCELADA') AS canceladas,
-                (SELECT COUNT(*) FROM citas WHERE DATE(fecha_cita) = CURDATE()) AS citas_hoy,
-                (SELECT COUNT(*) FROM citas WHERE YEARWEEK(fecha_cita) = YEARWEEK(CURDATE())) AS citas_semana,
-                (SELECT COUNT(*) FROM citas WHERE MONTH(fecha_cita) = MONTH(CURDATE()) AND YEAR(fecha_cita) = YEAR(CURDATE())) AS citas_mes,
+(SELECT COUNT(*) FROM citas WHERE DATE(fecha_cita) = CURRENT_DATE) AS citas_hoy,
+(SELECT COUNT(*) FROM citas WHERE DATE_TRUNC('week', fecha_cita) = DATE_TRUNC('week', CURRENT_DATE)) AS citas_semana,
+(SELECT COUNT(*) FROM citas WHERE EXTRACT(MONTH FROM fecha_cita) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM fecha_cita) = EXTRACT(YEAR FROM CURRENT_DATE)) AS citas_mes,                
                 (SELECT COUNT(*) FROM pacientes) AS pacientes_total,
                 (SELECT COUNT(*) FROM personal_medico pm JOIN empleados e ON pm.id_medico = e.id_empleado WHERE e.estado_contrato = 'ACTIVO') AS medicos_activos,
                 (SELECT COUNT(*) FROM empleados WHERE estado_contrato = 'ACTIVO') AS empleados_activos
@@ -83,7 +83,7 @@ public class ReporteDAO {
             FROM citas c
             JOIN personal_medico pm ON c.id_medico = pm.id_medico
             JOIN personas p ON pm.id_medico = p.id_persona
-            GROUP BY pm.id_medico
+            GROUP BY pm.id_medico, p.nombre, p.apellido
             ORDER BY total DESC
             """;
 
@@ -131,12 +131,11 @@ public class ReporteDAO {
     public List<Map<String, Object>> obtenerCitasPorMes(int year) {
         List<Map<String, Object>> resultado = new ArrayList<>();
         String sql = """
-            SELECT MONTH(fecha_cita) AS mes, 
-                   COUNT(*) AS total,
-                   SUM(CASE WHEN estado = 'ATENDIDA' THEN 1 ELSE 0 END) AS atendidas
+            
+                SELECT EXTRACT(MONTH FROM fecha_cita) AS mes, ...
             FROM citas
-            WHERE YEAR(fecha_cita) = ?
-            GROUP BY MONTH(fecha_cita)
+            WHERE EXTRACT(YEAR FROM fecha_cita) = ?
+            GROUP BY EXTRACT(MONTH FROM fecha_cita)
             ORDER BY mes
             """;
 

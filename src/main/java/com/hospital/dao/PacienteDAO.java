@@ -66,7 +66,7 @@ public class PacienteDAO {
 
     public int registrarPaciente(Paciente pac) {
         int idGenerado = -1;
-        String sqlPersona = "INSERT INTO personas (dni, nombre, apellido, telefono, fecha_nacimiento, direccion, genero) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sqlPersona = "INSERT INTO personas (dni, nombre, apellido, telefono, fecha_nacimiento, direccion, genero) VALUES (?, ?, ?, ?, ?, ?, ?::genero_enum)";
         String sqlPaciente = "INSERT INTO pacientes (id_paciente, historia_clinica, tipo_seguro, grupo_sanguineo) VALUES (?, ?, ?, ?)";
 
         try (Connection con = Conexion.getConexion()) {
@@ -105,7 +105,7 @@ public class PacienteDAO {
     }
 
     public boolean modificarPaciente(Paciente p) {
-        String sqlPersona = "UPDATE personas SET dni=?, nombre=?, apellido=?, telefono=?, fecha_nacimiento=?, direccion=?, genero=? WHERE id_persona=?";
+        String sqlPersona = "UPDATE personas SET dni=?, nombre=?, apellido=?, telefono=?, fecha_nacimiento=?, direccion=?, genero=?::genero_enum WHERE id_persona=?";
         String sqlPaciente = "UPDATE pacientes SET tipo_seguro=?, grupo_sanguineo=? WHERE id_paciente=?";
 
         try (Connection con = Conexion.getConexion()) {

@@ -32,7 +32,7 @@ public class CitaDAO {
                      "FROM citas c " +
                      "JOIN personas p ON c.id_paciente = p.id_persona " +
                      "JOIN servicios s ON c.id_servicio = s.id_servicio " +
-                     "WHERE c.id_medico = ? AND c.estado = 'PENDIENTE' AND DATE(c.fecha_cita) = CURDATE() " +
+                "WHERE c.id_medico = ? AND c.estado = 'PENDIENTE' AND DATE(c.fecha_cita) = CURRENT_DATE " +
                      "ORDER BY c.fecha_cita ASC";
 
         try (Connection con = Conexion.getConexion();
@@ -58,7 +58,7 @@ public class CitaDAO {
     }
 
     public boolean actualizarEstadoCita(int idCita, String estado) {
-        String sql = "UPDATE citas SET estado = ? WHERE id_cita = ?";
+        String sql = "UPDATE citas SET estado = ?::estado_cita_enum WHERE id_cita = ?";
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
 

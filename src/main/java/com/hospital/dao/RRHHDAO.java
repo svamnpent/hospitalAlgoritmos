@@ -141,7 +141,7 @@ public class RRHHDAO {
             con.setAutoCommit(false);
 
             // 1. Insertar en personas
-            String sqlPersona = "INSERT INTO personas (dni, nombre, apellido, telefono, fecha_nacimiento, direccion, genero) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sqlPersona = "INSERT INTO personas (dni, nombre, apellido, telefono, fecha_nacimiento, direccion, genero) VALUES (?, ?, ?, ?, ?, ?, ?::genero_enum)";
             int idPersona = -1;
             try (PreparedStatement ps = con.prepareStatement(sqlPersona, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, dni);

@@ -62,7 +62,7 @@ public class CajaDAO {
         if (soloIngresos) { sql.append(" AND m.tipo = 'INGRESO'"); }
         if (soloEgresos) { sql.append(" AND m.tipo = 'EGRESO'"); }
         if (categoria != null && !categoria.isEmpty()) {
-            sql.append(" AND m.categoria = ?");
+            sql.append(" AND m.categoria = ?::categoria_movimiento_enum");
             params.add(categoria);
         }
         if (fechaInicio != null && !fechaInicio.isEmpty()) {
@@ -102,9 +102,9 @@ public class CajaDAO {
     }
 
     public boolean registrarMovimiento(CajaMovimiento movimiento) {
-        String sql = """
+        String sql = """       
             INSERT INTO caja_movimientos (monto, tipo, categoria, descripcion, id_contador)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?::tipo_movimiento_enum, ?::categoria_movimiento_enum, ?, ?)
             """;
 
         try (Connection con = Conexion.getConexion();
@@ -125,11 +125,11 @@ public class CajaDAO {
     public List<Map<String, Object>> obtenerIngresosPorMes(int year) {
         List<Map<String, Object>> resultado = new ArrayList<>();
         String sql = """
-            SELECT MONTH(fecha) AS mes, 
-                   COALESCE(SUM(monto), 0) AS total
-            FROM caja_movimientos
-            WHERE tipo = 'INGRESO' AND YEAR(fecha) = ?
-            GROUP BY MONTH(fecha)
+           
+                SELECT EXTRACT(MONTH FROM fecha) AS mes, ...
+                                 FROM caja_movimientos
+                                 WHERE tipo = 'INGRESO' AND EXTRACT(YEAR FROM fecha) = ?
+                                 GROUP BY EXTRACT(MONTH FROM fecha)
             ORDER BY mes
             """;
 
