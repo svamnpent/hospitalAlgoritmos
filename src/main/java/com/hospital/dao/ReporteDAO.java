@@ -17,9 +17,9 @@ public class ReporteDAO {
                 (SELECT COUNT(*) FROM citas WHERE estado = 'ATENDIDA') AS atendidas,
                 (SELECT COUNT(*) FROM citas WHERE estado = 'PENDIENTE') AS pendientes,
                 (SELECT COUNT(*) FROM citas WHERE estado = 'CANCELADA') AS canceladas,
-(SELECT COUNT(*) FROM citas WHERE DATE(fecha_cita) = CURRENT_DATE) AS citas_hoy,
-(SELECT COUNT(*) FROM citas WHERE DATE_TRUNC('week', fecha_cita) = DATE_TRUNC('week', CURRENT_DATE)) AS citas_semana,
-(SELECT COUNT(*) FROM citas WHERE EXTRACT(MONTH FROM fecha_cita) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM fecha_cita) = EXTRACT(YEAR FROM CURRENT_DATE)) AS citas_mes,                
+                (SELECT COUNT(*) FROM citas WHERE DATE(fecha_cita) = CURRENT_DATE) AS citas_hoy,
+                (SELECT COUNT(*) FROM citas WHERE DATE_TRUNC('week', fecha_cita) = DATE_TRUNC('week', CURRENT_DATE)) AS citas_semana,
+                (SELECT COUNT(*) FROM citas WHERE EXTRACT(MONTH FROM fecha_cita) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM fecha_cita) = EXTRACT(YEAR FROM CURRENT_DATE)) AS citas_mes,
                 (SELECT COUNT(*) FROM pacientes) AS pacientes_total,
                 (SELECT COUNT(*) FROM personal_medico pm JOIN empleados e ON pm.id_medico = e.id_empleado WHERE e.estado_contrato = 'ACTIVO') AS medicos_activos,
                 (SELECT COUNT(*) FROM empleados WHERE estado_contrato = 'ACTIVO') AS empleados_activos
@@ -131,8 +131,9 @@ public class ReporteDAO {
     public List<Map<String, Object>> obtenerCitasPorMes(int year) {
         List<Map<String, Object>> resultado = new ArrayList<>();
         String sql = """
-            
-                SELECT EXTRACT(MONTH FROM fecha_cita) AS mes, ...
+            SELECT EXTRACT(MONTH FROM fecha_cita) AS mes, 
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN estado = 'ATENDIDA' THEN 1 ELSE 0 END) AS atendidas
             FROM citas
             WHERE EXTRACT(YEAR FROM fecha_cita) = ?
             GROUP BY EXTRACT(MONTH FROM fecha_cita)

@@ -12,9 +12,9 @@ public class PacienteDAO {
     public Paciente buscarPorId(int id) {
         Paciente pac = null;
         String sql = "SELECT p.*, pac.historia_clinica, pac.tipo_seguro, pac.grupo_sanguineo " +
-                     "FROM personas p " +
-                     "JOIN pacientes pac ON p.id_persona = pac.id_paciente " +
-                     "WHERE p.id_persona = ?";
+                "FROM personas p " +
+                "JOIN pacientes pac ON p.id_persona = pac.id_paciente " +
+                "WHERE p.id_persona = ?";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -41,9 +41,9 @@ public class PacienteDAO {
     public Paciente buscarPorDni(String dni) {
         Paciente pac = null;
         String sql = "SELECT p.*, pac.historia_clinica, pac.tipo_seguro " +
-                     "FROM personas p " +
-                     "JOIN pacientes pac ON p.id_persona = pac.id_paciente " +
-                     "WHERE p.dni = ?";
+                "FROM personas p " +
+                "JOIN pacientes pac ON p.id_persona = pac.id_paciente " +
+                "WHERE p.dni = ?";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -145,10 +145,10 @@ public class PacienteDAO {
         };
 
         String sql = "SELECT p.id_persona, p.dni, p.nombre, p.apellido, pa.grupo_sanguineo, " +
-                     "p.direccion, p.telefono, p.genero, pa.tipo_seguro, p.fecha_nacimiento " +
-                     "FROM pacientes pa " +
-                     "JOIN personas p ON pa.id_paciente = p.id_persona " +
-                     "ORDER BY " + columnaOrder + " ASC";
+                "p.direccion, p.telefono, p.genero, pa.tipo_seguro, p.fecha_nacimiento " +
+                "FROM pacientes pa " +
+                "JOIN personas p ON pa.id_paciente = p.id_persona " +
+                "ORDER BY " + columnaOrder + " ASC";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -177,10 +177,10 @@ public class PacienteDAO {
     public LinkedList<Paciente> buscarPacienteTexto(String texto) {
         LinkedList<Paciente> lista = new LinkedList<>();
         String sql = "SELECT p.id_persona, p.dni, p.nombre, p.apellido, pa.grupo_sanguineo, " +
-                     "p.direccion, p.telefono, p.genero, pa.tipo_seguro, p.fecha_nacimiento " +
-                     "FROM pacientes pa " +
-                     "JOIN personas p ON pa.id_paciente = p.id_persona " +
-                     "WHERE p.dni = ? OR p.nombre LIKE ? OR p.apellido LIKE ?";
+                "p.direccion, p.telefono, p.genero, pa.tipo_seguro, p.fecha_nacimiento " +
+                "FROM pacientes pa " +
+                "JOIN personas p ON pa.id_paciente = p.id_persona " +
+                "WHERE p.dni = ? OR p.nombre LIKE ? OR p.apellido LIKE ?";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -213,13 +213,13 @@ public class PacienteDAO {
     public LinkedList<Paciente> listarPacientesPorMedico(int idMedico) {
         LinkedList<Paciente> lista = new LinkedList<>();
         String sql = "SELECT DISTINCT p.id_persona, p.dni, p.nombre, p.apellido, " +
-                     "p.telefono, p.fecha_nacimiento, p.direccion, p.genero, " +
-                     "pa.historia_clinica, pa.tipo_seguro, pa.grupo_sanguineo, pa.alergias " +
-                     "FROM citas c " +
-                     "JOIN pacientes pa ON c.id_paciente = pa.id_paciente " +
-                     "JOIN personas p ON pa.id_paciente = p.id_persona " +
-                     "WHERE c.id_medico = ? " +
-                     "ORDER BY p.apellido, p.nombre";
+                "p.telefono, p.fecha_nacimiento, p.direccion, p.genero, " +
+                "pa.historia_clinica, pa.tipo_seguro, pa.grupo_sanguineo, pa.alergias " +
+                "FROM citas c " +
+                "JOIN pacientes pa ON c.id_paciente = pa.id_paciente " +
+                "JOIN personas p ON pa.id_paciente = p.id_persona " +
+                "WHERE c.id_medico = ? " +
+                "ORDER BY p.apellido, p.nombre";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {

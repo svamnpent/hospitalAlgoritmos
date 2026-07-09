@@ -75,7 +75,7 @@ public class RecepcionistaController {
                 model.addAttribute("estado", rs.getString("estado"));
             }
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
 
         model.addAttribute("empleado", detalles.getEmpleado());

@@ -28,12 +28,12 @@ public class CitaDAO {
     public LinkedList<Cita> listarCitasPendientesHoy(int idMedico) {
         LinkedList<Cita> lista = new LinkedList<>();
         String sql = "SELECT c.id_cita, c.id_paciente, c.id_servicio, c.fecha_cita, c.estado, " +
-                     "p.nombre, p.apellido, s.nombre AS nombre_servicio " +
-                     "FROM citas c " +
-                     "JOIN personas p ON c.id_paciente = p.id_persona " +
-                     "JOIN servicios s ON c.id_servicio = s.id_servicio " +
+                "p.nombre, p.apellido, s.nombre AS nombre_servicio " +
+                "FROM citas c " +
+                "JOIN personas p ON c.id_paciente = p.id_persona " +
+                "JOIN servicios s ON c.id_servicio = s.id_servicio " +
                 "WHERE c.id_medico = ? AND c.estado = 'PENDIENTE' AND DATE(c.fecha_cita) = CURRENT_DATE " +
-                     "ORDER BY c.fecha_cita ASC";
+                "ORDER BY c.fecha_cita ASC";
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {

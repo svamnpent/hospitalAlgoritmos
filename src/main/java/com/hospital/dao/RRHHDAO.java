@@ -63,7 +63,7 @@ public class RRHHDAO {
 
         List<Object> params = new ArrayList<>();
         if (estado != null && !estado.isEmpty()) {
-            sql.append(" AND e.estado_contrato = ?");
+            sql.append(" AND e.estado_contrato = ?::estado_contrato_enum");
             params.add(estado);
         }
         if (idRol != null && idRol > 0) {
@@ -162,7 +162,7 @@ public class RRHHDAO {
             }
 
             // 2. Insertar en empleados
-            String sqlEmpleado = "INSERT INTO empleados (id_empleado, id_rol, sueldo_base, fecha_contratacion, estado_contrato, dia_descanso, hora_entrada, hora_salida) VALUES (?, ?, ?, ?, 'ACTIVO', ?, ?, ?)";
+            String sqlEmpleado = "INSERT INTO empleados (id_empleado, id_rol, sueldo_base, fecha_contratacion, estado_contrato, dia_descanso, hora_entrada, hora_salida) VALUES (?, ?, ?, ?, 'ACTIVO', ?::dia_descanso_enum, ?, ?)";
             try (PreparedStatement ps = con.prepareStatement(sqlEmpleado)) {
                 ps.setInt(1, idPersona);
                 ps.setInt(2, idRol);
@@ -202,7 +202,7 @@ public class RRHHDAO {
     }
 
     public boolean actualizarEstadoContrato(int idEmpleado, String estado) {
-        String sql = "UPDATE empleados SET estado_contrato = ? WHERE id_empleado = ?";
+        String sql = "UPDATE empleados SET estado_contrato = ?::estado_contrato_enum WHERE id_empleado = ?";
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
@@ -216,7 +216,7 @@ public class RRHHDAO {
     }
 
     public boolean actualizarHorario(int idEmpleado, String diaDescanso, Time horaEntrada, Time horaSalida) {
-        String sql = "UPDATE empleados SET dia_descanso = ?, hora_entrada = ?, hora_salida = ? WHERE id_empleado = ?";
+        String sql = "UPDATE empleados SET dia_descanso = ?::dia_descanso_enum, hora_entrada = ?, hora_salida = ? WHERE id_empleado = ?";
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
 

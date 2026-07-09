@@ -12,10 +12,10 @@ public class UsuarioDAO {
     public Empleado obtenerPersonalPorUsername(String username) {
         Empleado emp = null;
         String sql = "SELECT p.id_persona, e.id_rol, p.nombre, p.apellido, p.dni, p.telefono, " +
-                     "e.dia_descanso, u.username, u.password " +
-                     "FROM usuarios u " +
-                     "JOIN empleados e ON u.id_empleado = e.id_empleado " +
-                     "JOIN personas p ON e.id_empleado = p.id_persona " +
+                "e.dia_descanso, u.username, u.password " +
+                "FROM usuarios u " +
+                "JOIN empleados e ON u.id_empleado = e.id_empleado " +
+                "JOIN personas p ON e.id_empleado = p.id_persona " +
                 "WHERE u.username = ? AND u.activo = true";
 
         try (Connection con = Conexion.getConexion();
@@ -37,8 +37,7 @@ public class UsuarioDAO {
                 emp.setPassword(rs.getString("password"));
             }
         } catch (SQLException e) {
-            System.err.println("========== ERROR SQL ==========");
-            e.printStackTrace();
+            System.err.println("Error al buscar usuario: " + e.getMessage());
         }
         return emp;
     }
@@ -46,9 +45,9 @@ public class UsuarioDAO {
     public Empleado obtenerPersonalPorCredenciales(String user, String pass) {
         Empleado emp = null;
         String sql = "SELECT p.id_persona, e.id_rol, p.nombre, p.apellido, p.dni, p.telefono, e.dia_descanso " +
-                     "FROM usuarios u " +
-                     "JOIN empleados e ON u.id_empleado = e.id_empleado " +
-                     "JOIN personas p ON e.id_empleado = p.id_persona " +
+                "FROM usuarios u " +
+                "JOIN empleados e ON u.id_empleado = e.id_empleado " +
+                "JOIN personas p ON e.id_empleado = p.id_persona " +
                 "WHERE u.username = ? AND u.password = ? AND u.activo = true";
 
         try (Connection con = Conexion.getConexion();
@@ -69,8 +68,7 @@ public class UsuarioDAO {
                 emp.setDiaDescanso(rs.getString("dia_descanso"));
             }
         } catch (SQLException e) {
-            System.err.println("========== ERROR SQL ==========");
-            e.printStackTrace();
+            System.err.println("Error en login: " + e.getMessage());
         }
         return emp;
     }
