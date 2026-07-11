@@ -96,8 +96,9 @@ tr:hover td { background: #f2f9ff; }
     min-height: 100vh; background: linear-gradient(135deg, #1a5276 0%, #154360 100%);
 }
 .login-card {
-    background: #fff; border-radius: 10px; padding: 40px 36px;
+    background: #fff; align-items: center; justify-content: center; border-radius: 10px; padding: 40px 36px;
     width: 360px; box-shadow: 0 6px 30px rgba(0,0,0,.25);
+
 }
 .login-card h2 { text-align: center; margin-bottom: 24px; color: #1a5276; font-size: 1.3rem; }
 .login-card .form-group { margin-bottom: 16px; }
@@ -113,3 +114,29 @@ tr:hover td { background: #f2f9ff; }
 
 /* ── Acciones fila ────────────────────────────────────── */
 .acciones { display: flex; gap: 6px; }
+
+.link-volver {
+    display: block;
+    margin-top: 14px;
+    color: #1a5276;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+.link-volver:hover {
+    text-decoration: underline;
+}
+
+.icono-login{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icono-login img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    justify-content: center;
+    align-items: center;
+}

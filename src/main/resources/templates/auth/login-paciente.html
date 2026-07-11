@@ -26,10 +26,7 @@
             color: #1a5276;
             margin-bottom: 8px;
         }
-        .paciente-card .icono-grande {
-            font-size: 3.5rem;
-            margin-bottom: 8px;
-        }
+
         .paciente-card .sub {
             color: #666;
             font-size: 0.9rem;
@@ -91,7 +88,9 @@
 <body>
 <div class="paciente-wrapper">
     <div class="paciente-card">
-        <div class="icono-grande">👨‍💼</div>
+        <div class="icono-login">
+            <img th:src="@{/imagenes/10992894.png}" alt="Icono Paciente"/>
+        </div>
         <h2>Acceso Paciente</h2>
         <p class="sub">Ingresa tu DNI para ver tus citas</p>
 
