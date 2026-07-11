@@ -96,13 +96,15 @@
 <body>
 <div class="eleccion-wrapper">
     <div class="eleccion-container">
-        <h1>Hospital Grupo 06</h1>
+        <h1>Hospital De la Salud</h1>
         <p class="subtitulo">¿Cómo deseas ingresar?</p>
 
         <div class="eleccion-grid">
             <!-- Opción Paciente -->
             <a th:href="@{/login-paciente}" class="eleccion-card">
-                <div class="icono">👨‍💼</div>
+                <div class="icono">
+                    <img th:src="@{/imagenes/10992894.png}" alt="Icono Paciente"/>
+                </div>
                 <h3>Paciente</h3>
                 <p>Consulta tus citas <br/>y historial clínico</p>
                 <span class="badge-rol">Acceso rápido</span>
@@ -110,16 +112,16 @@
 
             <!-- Opción Personal -->
             <a th:href="@{/login-personal}" class="eleccion-card">
-                <div class="icono">🧑‍⚕️</div>
+                <div class="icono">
+                    <img th:src="@{/imagenes/6210017.png}" alt="Icono empleado"/>
+                </div>
                 <h3>Personal</h3>
                 <p>Accede con tu usuario <br/>y contraseña</p>
                 <span class="badge-rol">Administración</span>
             </a>
         </div>
 
-        <div class="footer-eleccion">
-            ¿Eres paciente nuevo? <a th:href="@{/recepcionista/registrar}">Regístrate aquí</a>
-        </div>
+
     </div>
 </div>
 </body>
