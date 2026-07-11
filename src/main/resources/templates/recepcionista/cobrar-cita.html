@@ -17,7 +17,7 @@
 
 <div class="container">
     <div class="card" style="max-width:500px; margin:0 auto;">
-        <h2>💳 Cobrar Cita</h2>
+        <h2>Cobrar Cita</h2>
 
         <div class="alert alert-info">
             <strong>Paciente:</strong> <span th:text="${paciente}"></span><br/>
@@ -27,7 +27,7 @@
         </div>
 
         <div th:if="${estado != 'ATENDIDA'}" class="alert alert-warning">
-            ⚠️ Esta cita aún no ha sido atendida. Primero debe ser atendida por el médico.
+            Esta cita aún no ha sido atendida. Primero debe ser atendida por el médico.
         </div>
 
         <form th:action="@{/recepcionista/cobrar}" method="post" th:if="${estado == 'ATENDIDA'}">
@@ -42,7 +42,7 @@
             </div>
 
             <div style="display:flex; gap:12px;">
-                <button type="submit" class="btn btn-success">✅ COBRAR</button>
+                <button type="submit" class="btn btn-success">COBRAR</button>
                 <a th:href="@{/recepcionista}" class="btn btn-secondary">CANCELAR</a>
             </div>
         </form>

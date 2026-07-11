@@ -118,11 +118,11 @@
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <h2>Personal — Búsqueda en tiempo real</h2>
-            <a th:href="@{/admin}" class="btn btn-secondary btn-sm">🔄 Actualizar</a>
+            <a th:href="@{/admin}" class="btn btn-secondary btn-sm">Actualizar</a>
         </div>
 
         <div th:if="${personalEncontrado}" class="alert alert-success"
-             th:text="'✅ Encontrado: ' + ${personalEncontrado[1]} + ' ' + ${personalEncontrado[2]} + ' — ' + ${personalEncontrado[4]}">
+             th:text="' Encontrado: ' + ${personalEncontrado[1]} + ' ' + ${personalEncontrado[2]} + ' — ' + ${personalEncontrado[4]}">
         </div>
         <div th:if="${mensajeNo}" class="alert alert-warning" th:text="${mensajeNo}"></div>
 

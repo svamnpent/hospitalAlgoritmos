@@ -4,6 +4,7 @@
     <meta charset="UTF-8"/>
     <title>Contador — Panel</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
         .balance-card { background: #f8f9fa; padding: 14px 12px; border-radius: 8px; text-align: center; border-left: 4px solid #1a5276; }
@@ -19,23 +20,28 @@
         @media (max-width:720px){ .grid-2col { grid-template-columns:1fr; } }
         .filtros-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; align-items:center; justify-content:center; }
-        .modal-content { background:#fff; border-radius:8px; padding:24px; width:460px; max-height:90vh; overflow-y:auto; }
+        .modal-content { background:#fff; border-radius:8px; padding:24px; width:520px; max-height:90vh; overflow-y:auto; }
+        .acciones-botones { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+        .seleccionado { background: #fff3cd !important; }
+        .revertido { background: #f8d7da !important; color: #721c24; }
+        .revertido td { text-decoration: line-through; }
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <h1> Hospital De La Salud</h1>
+    <h1>Hospital Grupo 06</h1>
     <div>
         <span class="usuario" th:text="'Contador: ' + ${empleado.nombre}"></span>
-        <a th:href="@{/login}">Cerrar sesión</a>
+        <a th:href="@{/logout}">Cerrar sesion</a>
     </div>
 </nav>
 
 <div class="container">
+
     <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-    <!-- 💰 Balance -->
+    <!-- Balance -->
     <div class="balance-grid">
         <div class="balance-card ingreso">
             <div class="numero" th:text="${#numbers.formatDecimal(resumen.totalIngresos, 0, 2)}">0.00</div>
@@ -63,7 +69,16 @@
         </div>
     </div>
 
-    <!-- 📊 Gráficos -->
+    <!-- Botones de Accion -->
+    <div class="card">
+        <h2>Acciones</h2>
+        <div class="acciones-botones">
+            <button class="btn btn-success" onclick="abrirModal('modalCobrarCita')">Cobrar Cita</button>
+            <button class="btn btn-primary" onclick="abrirModal('modalPagarPersonal')">Pagar Personal</button>
+        </div>
+    </div>
+
+    <!-- Graficos -->
     <div class="grid-2col">
         <div class="card">
             <h2>Ingresos por Mes</h2>
@@ -82,7 +97,7 @@
             </div>
         </div>
         <div class="card">
-            <h2>Egresos por Categoría</h2>
+            <h2>Egresos por Categoria</h2>
             <div th:each="item : ${egresosPorCategoria}">
                 <div style="display:flex; align-items:center; gap:8px; margin:3px 0;">
                     <span style="min-width:100px;" th:text="${item.categoria}"></span>
@@ -94,13 +109,20 @@
         </div>
     </div>
 
-    <!-- 📋 Movimientos con filtros -->
+    <!-- Historial / Movimientos -->
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <h2>Movimientos</h2>
-            <button class="btn btn-danger" onclick="abrirModal()">+ REGISTRAR EGRESO</button>
+            <h2>Historial de Movimientos</h2>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <span style="font-size:0.8rem;color:#666;">Selecciona un movimiento para revertirlo</span>
+                <form th:action="@{/contador/revertir}" method="post" th:if="${mostrarBotonRevertir}">
+                    <input type="hidden" name="idMovimiento" th:value="${movimientoSeleccionado.idMovimiento}"/>
+                    <button type="submit" class="btn btn-warning">Revertir Seleccionado</button>
+                </form>
+            </div>
         </div>
 
+        <!-- Filtros -->
         <form method="get" class="filtros-row" style="margin:12px 0;">
             <div class="form-group">
                 <label>Tipo</label>
@@ -111,7 +133,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Categoría</label>
+                <label>Categoria</label>
                 <select name="filtroCategoria">
                     <option value="">Todas</option>
                     <option value="PAGO_CITA" th:selected="${filtroCategoria == 'PAGO_CITA'}">Pago Cita</option>
@@ -132,13 +154,26 @@
             <a th:href="@{/contador}" class="btn btn-sm">LIMPIAR</a>
         </form>
 
+        <div th:if="${mostrarBotonRevertir && movimientoSeleccionado != null}">
+            <div class="alert alert-warning">
+                <strong>Movimiento seleccionado:</strong>
+                #<span th:text="${movimientoSeleccionado.idMovimiento}"></span> -
+                <span th:text="${movimientoSeleccionado.tipo}"></span> -
+                <span th:text="${movimientoSeleccionado.categoria}"></span> -
+                S/ <span th:text="${movimientoSeleccionado.monto}"></span>
+                <span th:if="${movimientoSeleccionado.revertido}" style="color:#c0392b;">(YA REVERTIDO)</span>
+            </div>
+        </div>
+
         <div class="tabla-scroll">
             <table>
                 <thead>
-                <tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Descripción</th><th>Registrado por</th></tr>
+                <tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Categoria</th><th>Monto</th><th>Descripcion</th><th>Registrado por</th><th>Estado</th><th>Seleccionar</th></tr>
                 </thead>
                 <tbody>
-                <tr th:each="m : ${movimientos}">
+                <tr th:each="m : ${movimientos}"
+                    th:classappend="${movimientoSeleccionado != null && m.idMovimiento == movimientoSeleccionado.idMovimiento ? 'seleccionado' : ''}">
+                    <td th:text="${m.idMovimiento}"></td>
                     <td th:text="${#dates.format(m.fecha, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
                             <span th:classappend="${m.tipo == 'INGRESO' ? 'alert-success' : 'alert-danger'}"
@@ -149,9 +184,17 @@
                     <td style="font-weight:600;" th:text="${#numbers.formatDecimal(m.monto, 0, 2)}"></td>
                     <td th:text="${m.descripcion}"></td>
                     <td th:text="${m.nombreContador}"></td>
+                    <td>
+                        <span th:if="${m.revertido}" style="color:#c0392b;font-weight:600;">REVERTIDO</span>
+                        <span th:unless="${m.revertido}" style="color:#1e8449;font-weight:600;">ACTIVO</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/contador(revertirId=${m.idMovimiento})}" class="btn btn-sm btn-secondary"
+                           th:disabled="${m.revertido}">Seleccionar</a>
+                    </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(movimientos)}">
-                    <td colspan="6" style="text-align:center;color:#888;">Sin movimientos registrados.</td>
+                    <td colspan="9" style="text-align:center;color:#888;">Sin movimientos registrados.</td>
                 </tr>
                 </tbody>
             </table>
@@ -159,39 +202,139 @@
     </div>
 </div>
 
-<!-- Modal Egreso -->
-<div id="modalEgreso" class="modal">
+<!-- MODAL: Cobrar Cita -->
+<div id="modalCobrarCita" class="modal">
     <div class="modal-content">
-        <h2>Registrar Egreso</h2>
-        <form th:action="@{/contador/registrar-egreso}" method="post">
+        <h2>Cobrar Cita</h2>
+        <form th:action="@{/contador/cobrar-cita}" method="post">
             <div class="form-group" style="margin-bottom:12px;">
-                <label>Categoría *</label>
-                <select name="categoria" required>
-                    <option value="PLANILLA">Planilla</option>
-                    <option value="INSUMOS">Insumos</option>
-                    <option value="OTROS">Otros</option>
+                <label>Seleccionar Cita Atendida</label>
+                <select name="idCita" id="citaSelect" required onchange="actualizarMontoCita()">
+                    <option value="">-- Seleccionar --</option>
+                    <option th:each="c : ${citasPendientesPago}"
+                            th:value="${c[0]}"
+                            th:text="${c[1]} + ' - ' + ${c[2]} + ' - S/' + ${c[3]}"></option>
                 </select>
             </div>
             <div class="form-group" style="margin-bottom:12px;">
-                <label>Monto (S/) *</label>
-                <input type="number" name="monto" step="0.01" min="0.01" required/>
+                <label>Monto (S/)</label>
+                <input type="number" id="montoCita" name="monto" step="0.01" min="0.01" required/>
             </div>
             <div class="form-group" style="margin-bottom:12px;">
-                <label>Descripción</label>
-                <textarea name="descripcion" rows="3" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:5px;"></textarea>
+                <label>Metodo de Pago</label>
+                <select name="metodoPago" required>
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TARJETA">Tarjeta</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                </select>
             </div>
             <div style="display:flex; gap:10px;">
-                <button type="submit" class="btn btn-danger">REGISTRAR EGRESO</button>
-                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">CANCELAR</button>
+                <button type="submit" class="btn btn-success">Registrar Cobro</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalCobrarCita')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: Pagar Personal -->
+<div id="modalPagarPersonal" class="modal">
+    <div class="modal-content">
+        <h2>Pagar Personal</h2>
+        <form th:action="@{/contador/pagar-personal}" method="post">
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Rol</label>
+                <select name="idRol" id="rolSelect" required onchange="cargarEmpleadosPorRol()">
+                    <option value="">-- Seleccionar Rol --</option>
+                    <option th:each="r : ${roles}" th:value="${r[0]}" th:text="${r[1]}"></option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Empleado</label>
+                <select name="idEmpleado" id="empleadoSelect" required onchange="actualizarMontoEmpleado()">
+                    <option value="">-- Seleccionar Empleado --</option>
+                </select>
+                <input type="hidden" name="nombreEmpleado" id="nombreEmpleado"/>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>Monto (S/)</label>
+                <input type="number" id="montoEmpleado" name="monto" step="0.01" min="0.01" required/>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn btn-primary">Registrar Pago</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalPagarPersonal')">Cancelar</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function abrirModal() { document.getElementById('modalEgreso').style.display = 'flex'; }
-    function cerrarModal() { document.getElementById('modalEgreso').style.display = 'none'; }
-    window.onclick = function(event) { if (event.target == document.getElementById('modalEgreso')) cerrarModal(); }
+    function abrirModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+
+    function cerrarModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.className === 'modal') {
+            event.target.style.display = 'none';
+        }
+    }
+
+    function actualizarMontoCita() {
+        var select = document.getElementById('citaSelect');
+        var montoInput = document.getElementById('montoCita');
+        if (select.value) {
+            $.ajax({
+                url: '/contador/monto-cita',
+                data: { idCita: select.value },
+                success: function(data) {
+                    montoInput.value = data;
+                }
+            });
+        } else {
+            montoInput.value = '';
+        }
+    }
+
+    function cargarEmpleadosPorRol() {
+        var rol = document.getElementById('rolSelect').value;
+        var empleadoSelect = document.getElementById('empleadoSelect');
+        empleadoSelect.innerHTML = '<option value="">-- Seleccionar Empleado --</option>';
+        document.getElementById('montoEmpleado').value = '';
+        document.getElementById('nombreEmpleado').value = '';
+
+        if (rol) {
+            $.ajax({
+                url: '/contador/empleados-por-rol',
+                data: { idRol: rol },
+                success: function(data) {
+                    data.forEach(function(emp) {
+                        var option = document.createElement('option');
+                        option.value = emp[0];
+                        option.text = emp[1] + ' ' + emp[2] + ' - S/' + emp[3];
+                        option.dataset.sueldo = emp[3];
+                        empleadoSelect.appendChild(option);
+                    });
+                }
+            });
+        }
+    }
+
+    function actualizarMontoEmpleado() {
+        var select = document.getElementById('empleadoSelect');
+        var montoInput = document.getElementById('montoEmpleado');
+        var nombreInput = document.getElementById('nombreEmpleado');
+        if (select.value) {
+            var selected = select.options[select.selectedIndex];
+            montoInput.value = selected.dataset.sueldo || '';
+            nombreInput.value = selected.text.split(' - ')[0] || '';
+        } else {
+            montoInput.value = '';
+            nombreInput.value = '';
+        }
+    }
 </script>
 </body>
 </html>

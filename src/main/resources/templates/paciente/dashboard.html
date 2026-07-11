@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Mi Portal - Paciente</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+    <style>
+        .paciente-dashboard { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .header-paciente {
+            background: #1a5276;
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .header-paciente h1 { font-size: 1.3rem; font-weight: 700; }
+        .header-paciente .user-info { font-size: 0.9rem; opacity: 0.9; }
+        .header-paciente a { color: #aed6f1; text-decoration: none; font-size: 0.9rem; }
+        .header-paciente a:hover { text-decoration: underline; }
+        .ficha-medica {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1a5276;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
+        .ficha-medica .campo { font-size: 0.85rem; }
+        .ficha-medica .campo .label { color: #666; font-weight: 600; }
+        .ficha-medica .campo .valor { font-weight: 700; color: #222; }
+        .card-paciente {
+            background: #fff;
+            border-radius: 10px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 18px;
+        }
+        .card-paciente h3 {
+            font-size: 1rem;
+            color: #1a5276;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #eef2f6;
+            padding-bottom: 8px;
+        }
+        .badge-estado-cita {
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .badge-pendiente { background: #fef9e7; color: #9a7d0a; }
+        .badge-atendida { background: #d4efdf; color: #1e8449; }
+        .cita-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .cita-item:last-child { border-bottom: none; }
+        .cita-item .fecha { font-weight: 600; min-width: 150px; }
+        .cita-item .info { flex: 1; font-size: 0.9rem; }
+        .cita-item .info .servicio { font-weight: 600; }
+        .cita-vacia {
+            color: #888;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 0.95rem;
+        }
+        .alerta-cita {
+            background: #fef9e7;
+            border-left: 4px solid #d68910;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .alerta-cita strong { color: #9a7d0a; }
+    </style>
+</head>
+<body>
+
+<div class="paciente-dashboard">
+
+    <!-- Header -->
+    <div class="header-paciente">
+        <div>
+            <h1>Hospital Grupo 06</h1>
+            <div class="user-info">
+                <strong th:text="${paciente.nombre} + ' ' + ${paciente.apellido}"></strong>
+                · DNI: <span th:text="${paciente.dni}"></span>
+            </div>
+        </div>
+        <div>
+            <a th:href="@{/elige}">Cerrar sesion</a>
+        </div>
+    </div>
+
+    <!-- Ficha Medica -->
+    <div class="ficha-medica">
+        <div class="campo">
+            <span class="label">Historia Clinica</span><br/>
+            <span class="valor" th:text="${paciente.historiaClinica != null ? paciente.historiaClinica : 'Sin asignar'}">—</span>
+        </div>
+        <div class="campo">
+            <span class="label">Tipo de Seguro</span><br/>
+            <span class="valor" th:text="${paciente.tipoSeguro != null ? paciente.tipoSeguro : 'No registrado'}">—</span>
+        </div>
+        <div class="campo">
+            <span class="label">Grupo Sanguineo</span><br/>
+            <span class="valor" th:text="${paciente.grupoSanguineo != null ? paciente.grupoSanguineo : 'No registrado'}">—</span>
+        </div>
+        <div class="campo">
+            <span class="label">Telefono</span><br/>
+            <span class="valor" th:text="${paciente.telefono != null ? paciente.telefono : 'No registrado'}">—</span>
+        </div>
+        <div class="campo">
+            <span class="label">Alergias</span><br/>
+            <span class="valor" th:text="${paciente.alergias != null ? paciente.alergias : 'Ninguna'}">—</span>
+        </div>
+    </div>
+
+    <!-- Alerta si tiene citas pendientes -->
+    <div th:if="${tieneCitas}" class="alerta-cita">
+        <strong>Tienes <span th:text="${#lists.size(citasPendientes)}"></span> cita(s) pendiente(s)</strong>
+        <span style="display:block;font-size:0.85rem;color:#666;margin-top:4px;">
+            Revisa los detalles a continuacion.
+        </span>
+    </div>
+
+    <!-- Citas Pendientes -->
+    <div class="card-paciente">
+        <h3>Citas Pendientes</h3>
+        <div th:if="${#lists.isEmpty(citasPendientes)}">
+            <div class="cita-vacia">No tienes citas pendientes.</div>
+        </div>
+        <div th:each="c : ${citasPendientes}" class="cita-item">
+            <div class="fecha">
+                <span th:text="${#dates.format(c.fechaCitaCom, 'dd/MM/yyyy HH:mm')}"></span>
+            </div>
+            <div class="info">
+                <span class="servicio" th:text="${c.nombreServicio}"></span>
+                <span th:if="${c.nombreMedico != null}" th:text="' · ' + ${c.nombreMedico}"></span>
+            </div>
+            <div>
+                <span class="badge-estado-cita badge-pendiente">PENDIENTE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Citas Atendidas -->
+    <div class="card-paciente">
+        <h3>Historial de Citas Atendidas</h3>
+        <div th:if="${#lists.isEmpty(citasAtendidas)}">
+            <div class="cita-vacia">Aun no tienes citas atendidas.</div>
+        </div>
+        <div th:each="c : ${citasAtendidas}" class="cita-item">
+            <div class="fecha">
+                <span th:text="${#dates.format(c.fechaCitaCom, 'dd/MM/yyyy HH:mm')}"></span>
+            </div>
+            <div class="info">
+                <span class="servicio" th:text="${c.nombreServicio}"></span>
+                <span th:if="${c.nombreMedico != null}" th:text="' · ' + ${c.nombreMedico}"></span>
+            </div>
+            <div>
+                <span class="badge-estado-cita badge-atendida">ATENDIDA</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

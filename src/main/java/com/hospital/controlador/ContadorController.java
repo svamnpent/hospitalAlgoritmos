@@ -29,7 +29,8 @@ public class ContadorController {
                         @RequestParam(required = false) String filtroTipo,
                         @RequestParam(required = false) String filtroCategoria,
                         @RequestParam(required = false) String fechaInicio,
-                        @RequestParam(required = false) String fechaFin) {
+                        @RequestParam(required = false) String fechaFin,
+                        @RequestParam(required = false) Integer revertirId) {
 
         if (year == null) year = LocalDate.now().getYear();
 
@@ -44,36 +45,102 @@ public class ContadorController {
 
         boolean soloIngresos = "INGRESO".equals(filtroTipo);
         boolean soloEgresos = "EGRESO".equals(filtroTipo);
-        model.addAttribute("movimientos", cajaDAO.listarMovimientos(soloIngresos, soloEgresos,
-                filtroCategoria, fechaInicio, fechaFin));
+        List<CajaMovimiento> movimientos = cajaDAO.listarMovimientos(soloIngresos, soloEgresos,
+                filtroCategoria, fechaInicio, fechaFin);
+        model.addAttribute("movimientos", movimientos);
         model.addAttribute("filtroTipo", filtroTipo);
         model.addAttribute("filtroCategoria", filtroCategoria);
         model.addAttribute("fechaInicio", fechaInicio);
         model.addAttribute("fechaFin", fechaFin);
 
+        // Si se seleccionó un movimiento para revertir
+        if (revertirId != null) {
+            CajaMovimiento seleccionado = movimientos.stream()
+                    .filter(m -> m.getIdMovimiento() == revertirId)
+                    .findFirst()
+                    .orElse(null);
+            model.addAttribute("movimientoSeleccionado", seleccionado);
+            model.addAttribute("mostrarBotonRevertir", true);
+        } else {
+            model.addAttribute("mostrarBotonRevertir", false);
+        }
+
+        // Lista de empleados para pago
+        model.addAttribute("empleados", cajaDAO.listarEmpleadosActivos());
+        model.addAttribute("roles", List.of(
+                new Object[]{1, "ADMIN"},
+                new Object[]{2, "RECEPCIONISTA"},
+                new Object[]{3, "DOCTOR"},
+                new Object[]{4, "CONTADOR"},
+                new Object[]{5, "RRHH"}
+        ));
+
+        // Lista de citas atendidas sin pagar
+        model.addAttribute("citasPendientesPago", cajaDAO.listarCitasAtendidasSinPagar());
+
         return "contador/panel";
     }
 
-    @PostMapping("/registrar-egreso")
-    public String registrarEgreso(@RequestParam BigDecimal monto,
-                                  @RequestParam String categoria,
-                                  @RequestParam String descripcion,
-                                  @AuthenticationPrincipal EmpleadoDetails detalles,
-                                  RedirectAttributes redir) {
+    // Registrar pago de cita
+    @PostMapping("/cobrar-cita")
+    public String cobrarCita(@RequestParam int idCita,
+                             @RequestParam BigDecimal monto,
+                             @RequestParam String metodoPago,
+                             @AuthenticationPrincipal EmpleadoDetails detalles,
+                             RedirectAttributes redir) {
 
-        CajaMovimiento m = new CajaMovimiento();
-        m.setMonto(monto);
-        m.setTipo("EGRESO");
-        m.setCategoria(categoria);
-        m.setDescripcion(descripcion);
-        m.setIdContador(detalles.getEmpleado().getIdPersona());
-
-        boolean ok = cajaDAO.registrarMovimiento(m);
+        boolean ok = cajaDAO.registrarPagoCita(idCita, monto, metodoPago, detalles.getEmpleado().getIdPersona());
         if (ok) {
-            redir.addFlashAttribute("exito", "Egreso registrado correctamente.");
+            redir.addFlashAttribute("exito", "Pago de cita registrado: S/ " + monto);
         } else {
-            redir.addFlashAttribute("error", "Error al registrar el egreso.");
+            redir.addFlashAttribute("error", "Error al registrar el pago.");
         }
         return "redirect:/contador";
+    }
+
+    // Registrar pago a personal
+    @PostMapping("/pagar-personal")
+    public String pagarPersonal(@RequestParam int idEmpleado,
+                                @RequestParam BigDecimal monto,
+                                @RequestParam String nombreEmpleado,
+                                @AuthenticationPrincipal EmpleadoDetails detalles,
+                                RedirectAttributes redir) {
+
+        boolean ok = cajaDAO.registrarPagoPersonal(idEmpleado, monto, nombreEmpleado, detalles.getEmpleado().getIdPersona());
+        if (ok) {
+            redir.addFlashAttribute("exito", "Pago a " + nombreEmpleado + " registrado: S/ " + monto);
+        } else {
+            redir.addFlashAttribute("error", "Error al registrar el pago.");
+        }
+        return "redirect:/contador";
+    }
+
+    // Revertir un movimiento específico
+    @PostMapping("/revertir")
+    public String revertirMovimiento(@RequestParam int idMovimiento,
+                                     @AuthenticationPrincipal EmpleadoDetails detalles,
+                                     RedirectAttributes redir) {
+
+        String resultado = cajaDAO.revertirMovimiento(idMovimiento, detalles.getEmpleado().getIdPersona());
+        if (resultado.startsWith("OK")) {
+            redir.addFlashAttribute("exito", resultado.substring(3));
+        } else {
+            redir.addFlashAttribute("error", resultado);
+        }
+        return "redirect:/contador";
+    }
+
+    // Obtener empleados por rol (AJAX)
+    @GetMapping("/empleados-por-rol")
+    @ResponseBody
+    public List<Object[]> empleadosPorRol(@RequestParam int idRol) {
+        return cajaDAO.listarEmpleadosPorRol(idRol);
+    }
+
+    // Obtener monto de cita (AJAX)
+    @GetMapping("/monto-cita")
+    @ResponseBody
+    public BigDecimal montoCita(@RequestParam int idCita) {
+        return cajaDAO.obtenerMontoCita(idCita);
     }
 }

@@ -12,6 +12,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 
 @Controller
@@ -27,10 +30,24 @@ public class MedicoController {
     public String panel(@AuthenticationPrincipal EmpleadoDetails detalles, Model model) {
         int idMedico = detalles.getEmpleado().getIdPersona();
 
+        // ===== LOGS DE DEPURACION =====
+        System.out.println("=== MEDICO LOGUEADO ID: " + idMedico + " ===");
+        LocalDateTime ahoraLima = LocalDateTime.now(ZoneId.of("America/Lima"));
+        System.out.println("Hora actual en Lima: " + ahoraLima.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
         // Si la cola está vacía la cargamos (primera vez o al actualizar)
         if (medicoSesion.getColaAtencion().isEmpty()) {
             LinkedList<Cita> pendientes = citaDAO.listarCitasPendientesHoy(idMedico);
+            System.out.println("Citas encontradas para hoy: " + pendientes.size());
+            for (Cita c : pendientes) {
+                System.out.println("  Cita ID: " + c.getIdCita() +
+                        " - Fecha: " + c.getFechaCitaCom() +
+                        " - Paciente: " + c.getNombrePaciente() +
+                        " - Servicio: " + c.getNombreServicio());
+            }
             medicoSesion.cargarCola(pendientes);
+        } else {
+            System.out.println("Cola ya cargada con " + medicoSesion.getColaAtencion().size() + " citas");
         }
 
         model.addAttribute("empleado", detalles.getEmpleado());
@@ -49,7 +66,14 @@ public class MedicoController {
     @PostMapping("/actualizar")
     public String actualizar(@AuthenticationPrincipal EmpleadoDetails detalles) {
         int idMedico = detalles.getEmpleado().getIdPersona();
+        System.out.println("=== ACTUALIZANDO COLA PARA MEDICO ID: " + idMedico + " ===");
+
         LinkedList<Cita> pendientes = citaDAO.listarCitasPendientesHoy(idMedico);
+        System.out.println("Citas encontradas al actualizar: " + pendientes.size());
+        for (Cita c : pendientes) {
+            System.out.println("  Cita ID: " + c.getIdCita() + " - Fecha: " + c.getFechaCitaCom());
+        }
+
         medicoSesion.cargarCola(pendientes);
         medicoSesion.getPilaHistorial().clear();
         return "redirect:/medico";
@@ -72,7 +96,7 @@ public class MedicoController {
         } else {
             medicoSesion.getPilaHistorial().push(siguiente); // PUSH
             redir.addFlashAttribute("exito",
-                "Atendiendo a: " + siguiente.getNombrePaciente() + " — " + siguiente.getNombreServicio());
+                    "Atendiendo a: " + siguiente.getNombrePaciente() + " — " + siguiente.getNombreServicio());
         }
         return "redirect:/medico";
     }

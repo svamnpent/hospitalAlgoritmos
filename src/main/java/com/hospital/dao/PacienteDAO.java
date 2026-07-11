@@ -11,10 +11,14 @@ public class PacienteDAO {
 
     public Paciente buscarPorId(int id) {
         Paciente pac = null;
-        String sql = "SELECT p.*, pac.historia_clinica, pac.tipo_seguro, pac.grupo_sanguineo " +
-                "FROM personas p " +
-                "JOIN pacientes pac ON p.id_persona = pac.id_paciente " +
-                "WHERE p.id_persona = ?";
+        String sql = """
+        SELECT p.id_persona, p.dni, p.nombre, p.apellido, p.telefono,
+               p.fecha_nacimiento, p.direccion, p.genero,
+               pac.historia_clinica, pac.tipo_seguro, pac.grupo_sanguineo, pac.alergias
+        FROM personas p
+        JOIN pacientes pac ON p.id_persona = pac.id_paciente
+        WHERE p.id_persona = ?
+        """;
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -24,13 +28,17 @@ public class PacienteDAO {
             if (rs.next()) {
                 pac = new Paciente();
                 pac.setIdPersona(rs.getInt("id_persona"));
+                pac.setDni(rs.getString("dni"));
                 pac.setNombre(rs.getString("nombre"));
                 pac.setApellido(rs.getString("apellido"));
-                pac.setDni(rs.getString("dni"));
                 pac.setTelefono(rs.getString("telefono"));
+                pac.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                pac.setDireccion(rs.getString("direccion"));
+                pac.setGenero(rs.getString("genero"));
                 pac.setHistoriaClinica(rs.getString("historia_clinica"));
                 pac.setTipoSeguro(rs.getString("tipo_seguro"));
                 pac.setGrupoSanguineo(rs.getString("grupo_sanguineo"));
+                pac.setAlergias(rs.getString("alergias"));
             }
         } catch (SQLException e) {
             System.err.println("Error al buscar paciente por id: " + e.getMessage());
@@ -40,10 +48,14 @@ public class PacienteDAO {
 
     public Paciente buscarPorDni(String dni) {
         Paciente pac = null;
-        String sql = "SELECT p.*, pac.historia_clinica, pac.tipo_seguro " +
-                "FROM personas p " +
-                "JOIN pacientes pac ON p.id_persona = pac.id_paciente " +
-                "WHERE p.dni = ?";
+        String sql = """
+        SELECT p.id_persona, p.dni, p.nombre, p.apellido, p.telefono,
+               p.fecha_nacimiento, p.direccion, p.genero,
+               pac.historia_clinica, pac.tipo_seguro, pac.grupo_sanguineo, pac.alergias
+        FROM personas p
+        JOIN pacientes pac ON p.id_persona = pac.id_paciente
+        WHERE p.dni = ?
+        """;
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -53,10 +65,17 @@ public class PacienteDAO {
             if (rs.next()) {
                 pac = new Paciente();
                 pac.setIdPersona(rs.getInt("id_persona"));
+                pac.setDni(rs.getString("dni"));
                 pac.setNombre(rs.getString("nombre"));
                 pac.setApellido(rs.getString("apellido"));
-                pac.setDni(rs.getString("dni"));
+                pac.setTelefono(rs.getString("telefono"));
+                pac.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                pac.setDireccion(rs.getString("direccion"));
+                pac.setGenero(rs.getString("genero"));
                 pac.setHistoriaClinica(rs.getString("historia_clinica"));
+                pac.setTipoSeguro(rs.getString("tipo_seguro"));
+                pac.setGrupoSanguineo(rs.getString("grupo_sanguineo"));
+                pac.setAlergias(rs.getString("alergias"));
             }
         } catch (SQLException e) {
             System.err.println("Error al buscar paciente: " + e.getMessage());

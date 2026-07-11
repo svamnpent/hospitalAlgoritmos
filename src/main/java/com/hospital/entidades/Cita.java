@@ -18,8 +18,19 @@ public class Cita {
     // Campos auxiliares para JOINs (presentación)
     private String nombrePaciente;
     private String nombreServicio;
+    private String nombreMedico;
+    private double costo;
+
 
     public Cita() {}
+
+
+    // Getters y Setters
+    public String getNombreMedico() { return nombreMedico; }
+    public void setNombreMedico(String nombreMedico) { this.nombreMedico = nombreMedico; }
+    public double getCosto() { return costo; }
+    public void setCosto(double costo) { this.costo = costo; }
+
 
     public int getIdCita() { return idCita; }
     public void setIdCita(int idCita) { this.idCita = idCita; }

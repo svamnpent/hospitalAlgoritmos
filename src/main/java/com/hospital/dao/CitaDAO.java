@@ -32,7 +32,8 @@ public class CitaDAO {
                 "FROM citas c " +
                 "JOIN personas p ON c.id_paciente = p.id_persona " +
                 "JOIN servicios s ON c.id_servicio = s.id_servicio " +
-                "WHERE c.id_medico = ? AND c.estado = 'PENDIENTE' AND DATE(c.fecha_cita) = CURRENT_DATE " +
+                "WHERE c.id_medico = ? AND c.estado = 'PENDIENTE' " +
+                "AND DATE(c.fecha_cita) = (CURRENT_DATE + INTERVAL '5 HOURS') " +
                 "ORDER BY c.fecha_cita ASC";
 
         try (Connection con = Conexion.getConexion();
@@ -53,6 +54,7 @@ public class CitaDAO {
             }
         } catch (SQLException e) {
             System.err.println("Error al listar cola de atención: " + e.getMessage());
+            e.printStackTrace();
         }
         return lista;
     }
@@ -70,4 +72,104 @@ public class CitaDAO {
             return false;
         }
     }
+
+
+    public LinkedList<Cita> listarCitasPendientesPorPacienteConMedico(int idPaciente) {
+        LinkedList<Cita> lista = new LinkedList<>();
+        String sql = """
+            SELECT c.id_cita, c.fecha_cita, c.estado,
+                   s.nombre AS nombre_servicio,
+                   CONCAT(pe.nombre, ' ', pe.apellido) AS nombre_medico
+            FROM citas c
+            JOIN servicios s ON c.id_servicio = s.id_servicio
+            JOIN personal_medico pm ON c.id_medico = pm.id_medico
+            JOIN personas pe ON pm.id_medico = pe.id_persona
+            WHERE c.id_paciente = ? AND c.estado = 'PENDIENTE'
+            ORDER BY c.fecha_cita ASC
+            """;
+
+        try (Connection con = Conexion.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, idPaciente);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Cita c = new Cita();
+                c.setIdCita(rs.getInt("id_cita"));
+                c.setFechaCitaCom(rs.getTimestamp("fecha_cita"));
+                c.setEstado(rs.getString("estado"));
+                c.setNombreServicio(rs.getString("nombre_servicio"));
+                c.setNombreMedico(rs.getString("nombre_medico"));
+                lista.add(c);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al listar citas pendientes con medico: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public LinkedList<Cita> listarCitasPendientesPorPaciente(int idPaciente) {
+        LinkedList<Cita> lista = new LinkedList<>();
+        String sql = """
+        SELECT c.id_cita, c.fecha_cita, c.estado,
+               s.nombre AS nombre_servicio
+        FROM citas c
+        JOIN servicios s ON c.id_servicio = s.id_servicio
+        WHERE c.id_paciente = ? AND c.estado = 'PENDIENTE'
+        ORDER BY c.fecha_cita ASC
+        """;
+
+        try (Connection con = Conexion.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, idPaciente);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Cita c = new Cita();
+                c.setIdCita(rs.getInt("id_cita"));
+                c.setFechaCitaCom(rs.getTimestamp("fecha_cita"));
+                c.setEstado(rs.getString("estado"));
+                c.setNombreServicio(rs.getString("nombre_servicio"));
+                lista.add(c);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al listar citas pendientes del paciente: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public LinkedList<Cita> listarCitasAtendidasPorPaciente(int idPaciente) {
+        LinkedList<Cita> lista = new LinkedList<>();
+
+        String sql = """
+        SELECT c.id_cita, c.fecha_cita, c.estado,
+               s.nombre AS nombre_servicio
+        FROM citas c
+        JOIN servicios s ON c.id_servicio = s.id_servicio
+        WHERE c.id_paciente = ? AND c.estado = 'ATENDIDA'
+        ORDER BY c.fecha_cita DESC
+        """;
+
+        try (Connection con = Conexion.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, idPaciente);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Cita c = new Cita();
+                c.setIdCita(rs.getInt("id_cita"));
+                c.setFechaCitaCom(rs.getTimestamp("fecha_cita"));
+                c.setEstado(rs.getString("estado"));
+                c.setNombreServicio(rs.getString("nombre_servicio"));
+                lista.add(c);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al listar citas atendidas del paciente: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
 }

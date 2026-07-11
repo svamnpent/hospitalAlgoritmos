@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Hospital Grupo 06 — Elegir acceso</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+    <style>
+        .eleccion-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a5276 0%, #154360 100%);
+            padding: 20px;
+        }
+        .eleccion-container {
+            text-align: center;
+            color: #fff;
+        }
+        .eleccion-container h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+        .eleccion-container .subtitulo {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        .eleccion-grid {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .eleccion-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px 35px 35px;
+            width: 220px;
+            cursor: pointer;
+            transition: transform 0.25s, box-shadow 0.25s;
+            text-decoration: none;
+            color: #222;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .eleccion-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 35px rgba(0,0,0,0.25);
+        }
+        .eleccion-card .icono {
+            font-size: 4.5rem;
+            margin-bottom: 12px;
+        }
+        .eleccion-card .icono img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .eleccion-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a5276;
+            margin-bottom: 4px;
+        }
+        .eleccion-card p {
+            font-size: 0.85rem;
+            color: #666;
+            margin: 0;
+        }
+        .eleccion-card .badge-rol {
+            display: inline-block;
+            background: #d6eaf8;
+            color: #1a5276;
+            padding: 2px 14px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .footer-eleccion {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        .footer-eleccion a {
+            color: #aed6f1;
+            text-decoration: underline;
+        }
+        .footer-eleccion a:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="eleccion-wrapper">
+    <div class="eleccion-container">
+        <h1>Hospital Grupo 06</h1>
+        <p class="subtitulo">¿Cómo deseas ingresar?</p>
+
+        <div class="eleccion-grid">
+            <!-- Opción Paciente -->
+            <a th:href="@{/login-paciente}" class="eleccion-card">
+                <div class="icono">👨‍💼</div>
+                <h3>Paciente</h3>
+                <p>Consulta tus citas <br/>y historial clínico</p>
+                <span class="badge-rol">Acceso rápido</span>
+            </a>
+
+            <!-- Opción Personal -->
+            <a th:href="@{/login-personal}" class="eleccion-card">
+                <div class="icono">🧑‍⚕️</div>
+                <h3>Personal</h3>
+                <p>Accede con tu usuario <br/>y contraseña</p>
+                <span class="badge-rol">Administración</span>
+            </a>
+        </div>
+
+        <div class="footer-eleccion">
+            ¿Eres paciente nuevo? <a th:href="@{/recepcionista/registrar}">Regístrate aquí</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

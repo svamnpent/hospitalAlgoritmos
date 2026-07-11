@@ -25,14 +25,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/login").permitAll()
-                        .requestMatchers("/recepcionista/**").hasRole("RECEPCIONISTA")
-                        .requestMatchers("/medico/**").hasRole("MEDICO")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/contador/**").hasRole("CONTADOR")
-                        .requestMatchers("/rrhh/**").hasRole("RRHH")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -45,8 +40,8 @@ public class SecurityConfig {
                                 case "ROLE_RECEPCIONISTA" -> res.sendRedirect("/recepcionista");
                                 case "ROLE_MEDICO"        -> res.sendRedirect("/medico");
                                 case "ROLE_ADMIN"         -> res.sendRedirect("/admin");
-                                case "ROLE_CONTADOR"      -> res.sendRedirect("/contador");  // 👈 AGREGAR
-                                case "ROLE_RRHH"          -> res.sendRedirect("/rrhh");      // 👈 AGREGAR
+                                case "ROLE_CONTADOR"      -> res.sendRedirect("/contador");
+                                case "ROLE_RRHH"          -> res.sendRedirect("/rrhh");
                                 default                   -> res.sendRedirect("/login?error");
                             }
                         })
@@ -54,7 +49,10 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
+                        .logoutSuccessUrl("/root?logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
                 );
 
         return http.build();
@@ -63,10 +61,6 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> {
-            // Busca en BD igual que el original UsuarioDAO
-            Empleado emp = usuarioDAO.obtenerPersonalPorCredenciales(username, "");
-            // La validación real de password la hace Spring Security con el PasswordEncoder
-            // Necesitamos cargar por username; ver nota en UsuarioDAO
             Empleado empReal = usuarioDAO.obtenerPersonalPorUsername(username);
             if (empReal == null) throw new UsernameNotFoundException("Usuario no encontrado");
 
@@ -79,7 +73,6 @@ public class SecurityConfig {
                 default -> "ROLE_USER";
             };
 
-            // Guardamos el empleado en el principal para usarlo en controllers
             return new EmpleadoDetails(empReal, List.of(new SimpleGrantedAuthority(roleName)));
         };
     }
@@ -87,7 +80,6 @@ public class SecurityConfig {
     @Bean
     @SuppressWarnings("deprecation")
     public PasswordEncoder passwordEncoder() {
-        // El proyecto original guarda passwords en texto plano
         return NoOpPasswordEncoder.getInstance();
     }
 }

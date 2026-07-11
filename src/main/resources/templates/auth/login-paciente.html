@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Paciente — Ingresar</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+    <style>
+        .paciente-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a5276 0%, #154360 100%);
+            padding: 20px;
+        }
+        .paciente-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 35px 40px;
+            width: 380px;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .paciente-card h2 {
+            color: #1a5276;
+            margin-bottom: 8px;
+        }
+        .paciente-card .icono-grande {
+            font-size: 3.5rem;
+            margin-bottom: 8px;
+        }
+        .paciente-card .sub {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .paciente-card .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .paciente-card .form-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.85rem;
+        }
+        .paciente-card .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-top: 4px;
+        }
+        .paciente-card .form-group input:focus {
+            outline: none;
+            border-color: #1a5276;
+        }
+        .paciente-card .btn {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+        }
+        .paciente-card .link-volver {
+            display: block;
+            margin-top: 14px;
+            color: #1a5276;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .paciente-card .link-volver:hover {
+            text-decoration: underline;
+        }
+        .paciente-card .alert {
+            margin-bottom: 16px;
+        }
+        .paciente-card .registro-sugerencia {
+            margin-top: 12px;
+            padding: 12px;
+            background: #d6eaf8;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #1a5276;
+        }
+        .paciente-card .registro-sugerencia a {
+            color: #1a5276;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+<div class="paciente-wrapper">
+    <div class="paciente-card">
+        <div class="icono-grande">👨‍💼</div>
+        <h2>Acceso Paciente</h2>
+        <p class="sub">Ingresa tu DNI para ver tus citas</p>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <form th:action="@{/paciente/ingresar}" method="post">
+            <div class="form-group">
+                <label for="dni">Número de DNI</label>
+                <input type="text" id="dni" name="dni"
+                       placeholder="Ej: 12345678"
+                       th:value="${dni}" maxlength="8" required autofocus/>
+            </div>
+            <button type="submit" class="btn btn-primary">INGRESAR</button>
+        </form>
+
+        <div th:if="${mostrarRegistro}" class="registro-sugerencia">
+            <strong> ¿No estás registrado?</strong><br/>
+            Te invitamos a visitarnos para registrarte como paciente.<br/>
+            <a th:href="@{/recepcionista/registrar}">Solicitar registro →</a>
+        </div>
+
+        <a th:href="@{/elige}" class="link-volver">← Volver a elegir acceso</a>
+    </div>
+</div>
+</body>
+</html>
