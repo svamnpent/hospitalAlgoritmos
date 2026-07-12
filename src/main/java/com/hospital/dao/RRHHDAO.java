@@ -162,7 +162,7 @@ public class RRHHDAO {
             }
 
             // 2. Insertar en empleados
-            String sqlEmpleado = "INSERT INTO empleados (id_empleado, id_rol, sueldo_base, fecha_contratacion, estado_contrato, dia_descanso, hora_entrada, hora_salida) VALUES (?, ?, ?, ?, 'ACTIVO', ?::dia_descanso_enum, ?, ?)";
+            String sqlEmpleado = "INSERT INTO empleados (id_empleado, id_rol, sueldo_base, fecha_contratacion, estado_contrato, dia_descanso, hora_entrada, hora_salida) VALUES (?, ?, ?, ?, 'ACTIVO', ?::dia_semana_enum, ?, ?)";
             try (PreparedStatement ps = con.prepareStatement(sqlEmpleado)) {
                 ps.setInt(1, idPersona);
                 ps.setInt(2, idRol);
@@ -216,7 +216,7 @@ public class RRHHDAO {
     }
 
     public boolean actualizarHorario(int idEmpleado, String diaDescanso, Time horaEntrada, Time horaSalida) {
-        String sql = "UPDATE empleados SET dia_descanso = ?::dia_descanso_enum, hora_entrada = ?, hora_salida = ? WHERE id_empleado = ?";
+        String sql = "UPDATE empleados SET dia_descanso = ?::dia_semana_enum, hora_entrada = ?, hora_salida = ? WHERE id_empleado = ?";
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
