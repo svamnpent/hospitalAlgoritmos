@@ -7,10 +7,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/**
- * Wrapper que expone la conexión del DataSource de Spring de forma estática,
- * para no modificar la lógica de los DAOs originales.
- */
+
 @Component
 public class Conexion {
 

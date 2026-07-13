@@ -62,7 +62,7 @@ public class MedicoController {
         return "medico/panel";
     }
 
-    // ── Actualizar cola (botón Actualizar) ───────────────────────────────────
+    //  Actualizar cola (botón Actualizar)
     @PostMapping("/actualizar")
     public String actualizar(@AuthenticationPrincipal EmpleadoDetails detalles) {
         int idMedico = detalles.getEmpleado().getIdPersona();
@@ -79,7 +79,7 @@ public class MedicoController {
         return "redirect:/medico";
     }
 
-    // ── Atender siguiente (DEQUEUE + PUSH) ───────────────────────────────────
+    // Atender siguiente (DEQUEUE + PUSH)
     @PostMapping("/atender")
     public String atenderSiguiente(RedirectAttributes redir) {
         if (medicoSesion.getColaAtencion().isEmpty()) {

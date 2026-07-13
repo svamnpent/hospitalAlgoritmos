@@ -155,7 +155,7 @@ public class CajaDAO {
         }
     }
 
-    // ── REGISTRAR PAGO A PERSONAL ───────────────────────────────────────
+    // REGISTRAR PAGO A PERSONAL
     public boolean registrarPagoPersonal(int idEmpleado, BigDecimal monto, String nombreEmpleado, int idContador) {
 
         String sql = "INSERT INTO caja_movimientos (monto, tipo, categoria, descripcion, id_contador, revertido, revertido_por) " +
@@ -245,7 +245,7 @@ public class CajaDAO {
         }
     }
 
-    // ── LISTAR EMPLEADOS ACTIVOS ────────────────────────────────────────
+    //  LISTAR EMPLEADOS ACTIVOS
     public List<Object[]> listarEmpleadosActivos() {
         List<Object[]> lista = new ArrayList<>();
         String sql = """
@@ -276,7 +276,7 @@ public class CajaDAO {
         return lista;
     }
 
-    // ── LISTAR EMPLEADOS POR ROL (AJAX) ────────────────────────────────
+    //  LISTAR EMPLEADOS POR ROL
     public List<Object[]> listarEmpleadosPorRol(int idRol) {
         List<Object[]> lista = new ArrayList<>();
         String sql = """
@@ -306,7 +306,7 @@ public class CajaDAO {
         return lista;
     }
 
-    // ── LISTAR CITAS ATENDIDAS SIN PAGAR ──────────────────────────────
+    // LISTAR CITAS ATENDIDAS SIN PAGAR
     public List<Object[]> listarCitasAtendidasSinPagar() {
         List<Object[]> lista = new ArrayList<>();
         String sql = """
@@ -338,7 +338,7 @@ public class CajaDAO {
         return lista;
     }
 
-    // ── OBTENER MONTO DE CITA (AJAX) ────────────────────────────────────
+    //  OBTENER MONTO DE CITA
     public BigDecimal obtenerMontoCita(int idCita) {
         String sql = "SELECT s.costo FROM citas c JOIN servicios s ON c.id_servicio = s.id_servicio WHERE c.id_cita = ?";
         try (Connection con = Conexion.getConexion();
