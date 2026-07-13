@@ -25,7 +25,7 @@ public class MedicoController {
     @Autowired private CitaDAO citaDAO;
     @Autowired private MedicoSesion medicoSesion;
 
-    // ── Panel principal del médico ────────────────────────────────────────────
+    //  Panel principal del médico
     @GetMapping
     public String panel(@AuthenticationPrincipal EmpleadoDetails detalles, Model model) {
         int idMedico = detalles.getEmpleado().getIdPersona();
@@ -54,7 +54,7 @@ public class MedicoController {
         model.addAttribute("pacientes", pacienteDAO.listarPacientesPorMedico(idMedico));
         model.addAttribute("cola", medicoSesion.getColaAtencion());
 
-        // Pila: mostramos de tope a base (igual que refrescarTablaHistorial)
+        // Pila, mostramos de tope a base
         LinkedList<Cita> historial = new LinkedList<>(medicoSesion.getPilaHistorial());
         java.util.Collections.reverse(historial);
         model.addAttribute("historial", historial);
@@ -101,7 +101,7 @@ public class MedicoController {
         return "redirect:/medico";
     }
 
-    // ── Deshacer última atención (POP) ───────────────────────────────────────
+    // Deshacer última atención (POP)
     @PostMapping("/deshacer")
     public String deshacer(RedirectAttributes redir) {
         if (medicoSesion.getPilaHistorial().isEmpty()) {
