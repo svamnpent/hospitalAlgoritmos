@@ -23,7 +23,7 @@ public class RecepcionistaController {
     @Autowired private MedicoDAO medicoDAO;
     @Autowired private ServicioDAO servicioDAO;
 
-    // ── Panel principal: lista de pacientes ──────────────────────────────────
+    //  Panel principal: lista de pacientes
     @GetMapping
     public String panel(@RequestParam(defaultValue = "apellido") String orden,
                         @AuthenticationPrincipal EmpleadoDetails detalles,
@@ -36,7 +36,7 @@ public class RecepcionistaController {
             arbol.insertar(p);
         }
 
-        // El inorden del árbol devuelve la lista ordenada por DNI
+        //  árbol devuelve la lista ordenada por DNI
         LinkedList<Paciente> pacientes = arbol.inorden();
 
         model.addAttribute("pacientes", pacientes);
@@ -44,9 +44,9 @@ public class RecepcionistaController {
         model.addAttribute("empleado", detalles.getEmpleado());
         return "recepcionista/panel";
     }
-    // En RecepcionistaController.java - agregar estos métodos
 
-    // ── Cobrar cita después de atender ──────────────────────────────────
+
+    //  Cobrar cita después de atender
     @GetMapping("/cobrar/{idCita}")
     public String formularioCobrar(@PathVariable int idCita,
                                    @AuthenticationPrincipal EmpleadoDetails detalles,
@@ -92,7 +92,7 @@ public class RecepcionistaController {
         try (Connection con = Conexion.getConexion()) {
             con.setAutoCommit(false);
 
-            // 1. Obtener costo del servicio
+            // Obtener costo del servicio
             String sqlCosto = """
             SELECT s.costo FROM citas c
             JOIN servicios s ON c.id_servicio = s.id_servicio
@@ -105,7 +105,7 @@ public class RecepcionistaController {
                 if (rs.next()) costo = rs.getDouble("costo");
             }
 
-            // 2. Registrar en caja_movimientos
+            //Registrar en caja_movimientos
             String sqlMov = "INSERT INTO caja_movimientos (monto, tipo, categoria, descripcion, id_contador) VALUES (?, 'INGRESO', 'PAGO_CITA', ?, ?)";
             int idMov = -1;
             try (PreparedStatement ps = con.prepareStatement(sqlMov, Statement.RETURN_GENERATED_KEYS)) {
@@ -117,7 +117,7 @@ public class RecepcionistaController {
                 if (rs.next()) idMov = rs.getInt(1);
             }
 
-            // 3. Registrar en pagos_citas
+            // Registrar en pagos_citas
             if (idMov != -1) {
                 String sqlPago = "INSERT INTO pagos_citas (id_cita, id_movimiento, metodo_pago) VALUES (?, ?, ?)";
                 try (PreparedStatement ps = con.prepareStatement(sqlPago)) {
@@ -136,7 +136,7 @@ public class RecepcionistaController {
         }
         return "redirect:/recepcionista";
     }
-    // ── Búsqueda en tabla por nombre/dni ────────────────────────────────────
+    //  Búsqueda en tabla por nombre/dni
     @GetMapping("/buscar")
     public String buscarTabla(@RequestParam String texto,
                               @AuthenticationPrincipal EmpleadoDetails detalles,
@@ -149,7 +149,7 @@ public class RecepcionistaController {
         return "recepcionista/panel";
     }
 
-    // ── Buscar paciente por DNI (para agendar cita) ──────────────────────────
+    // Buscar paciente por DNI (para agendar cita)
     @GetMapping("/buscar-dni")
     public String buscarPorDni(@RequestParam String dni,
                                @AuthenticationPrincipal EmpleadoDetails detalles,
@@ -174,7 +174,7 @@ public class RecepcionistaController {
         return "recepcionista/panel";
     }
 
-    // ── Formulario registrar nuevo paciente ──────────────────────────────────
+    // Formulario registrar nuevo paciente
     @GetMapping("/registrar")
     public String formularioRegistrar(@AuthenticationPrincipal EmpleadoDetails detalles,
                                       Model model) {
@@ -217,7 +217,7 @@ public class RecepcionistaController {
         return "redirect:/recepcionista";
     }
 
-    // ── Modificar paciente ───────────────────────────────────────────────────
+    // Modificar paciente
     @PostMapping("/modificar")
     public String modificarPaciente(@RequestParam int idPersona,
                                     @RequestParam String dni,
@@ -252,7 +252,7 @@ public class RecepcionistaController {
         return "redirect:/recepcionista";
     }
 
-    // ── Formulario agendar cita ──────────────────────────────────────────────
+    // Formulario agendar cita
     @GetMapping("/agendar/{idPaciente}")
     public String formularioAgendar(@PathVariable int idPaciente,
                                     @AuthenticationPrincipal EmpleadoDetails detalles,
@@ -302,7 +302,7 @@ public class RecepcionistaController {
         return "redirect:/recepcionista";
     }
 
-    // Genera las horas en formato HH:mm de 00:00 a 23:30 (igual que el JComboBox)
+    // Genera las horas en formato HH:mm de 00:00 a 23:30
     private java.util.List<String> generarHoras() {
         java.util.List<String> horas = new java.util.ArrayList<>();
         for (int h = 0; h < 24; h++) {

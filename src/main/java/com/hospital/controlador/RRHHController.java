@@ -51,7 +51,7 @@ public class RRHHController {
         return "rrhh/panel";
     }
 
-    // ── CONTRATAR NUEVO EMPLEADO ─────────────────────────────────
+    //  CONTRATAR NUEVO EMPLEADO
     @PostMapping("/contratar")
     public String contratar(@RequestParam String dni,
                             @RequestParam String nombre,

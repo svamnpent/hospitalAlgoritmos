@@ -55,7 +55,7 @@ public class AdminController {
         return "admin/panel";
     }
 
-    // 🔍 Búsqueda en tiempo real (AJAX)
+    //  Búsqueda en tiempo real (AJAX)
     @GetMapping("/buscar-ajax")
     @ResponseBody
     public List<Object[]> buscarAjax(@RequestParam String dni) {
